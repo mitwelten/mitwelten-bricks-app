@@ -10,10 +10,15 @@ The following technologies were used for the implementation of the project:
 * [JavaFX](https://openjfx.io/)
 * [Gradle](https://gradle.org/)
 * [MQTT](https://mqtt.org/)
+* [swisstopo](https://www.swisstopo.admin.ch/de/home.html)
  
 ### Dependencies 
+The application needs dependencies from [maven central](https://mvnrepository.com/repos/central). However, it also has local dependencies, which you can find in the `libs` folder.
 * [Eclipse Paho Client Mqttv3](https://www.eclipse.org/paho/)
-* [FHNW IOT Bricks Project](https://github.com/mitwelten/fhnw-iot-bricks)
+* [FHNW IOT Bricks Project](https://github.com/mitwelten/fhnw-iot-bricks) _(locally)_
+
+#### Testing
+* [JUnit Jupiter API](https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api)
 
 ## Getting Started
 
