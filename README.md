@@ -88,5 +88,4 @@ This project is licensed under the [MIT License](https://choosealicense.com/lice
 Feel free to modify and distribute it as needed.
 
 ## Contact
-- [Andri Wild](mailto:andri.wild@fhnw.ch)
-- [Prof. Thomas Amberg](mailto:thomas.amberg@fhnw.ch)
+- [mitwelten.technik@fhnw.ch](mailto:mitwelten.technik@fhnw.ch)

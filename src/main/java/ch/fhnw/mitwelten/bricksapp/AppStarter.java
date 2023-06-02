@@ -1,4 +1,10 @@
+/*----------------------------------------------------------------------------------------
+ Copyright (c) 2023 FHNW (University of Applied Sciences and Arts Northwestern Switzerland)
+ Licensed under MIT License
+ ---------------------------------------------------------------------------------------*/
+
 package ch.fhnw.mitwelten.bricksapp;
+
 
 import javafx.application.Application;
 import javafx.scene.Scene;
