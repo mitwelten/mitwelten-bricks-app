@@ -23,6 +23,7 @@ public class BrickController extends ControllerBase<Garden> {
 
   private final ProxyGroup proxyGroup;
 
+
   public BrickController(Garden model) {
     super(model);
 
@@ -44,12 +45,17 @@ public class BrickController extends ControllerBase<Garden> {
         proxyGroup.waitForUpdate();
 
         if(mostActiveSensor.isPresent()){
-          model.actuators.getValue().forEach(brick -> setTargetPosition(brick, mostActiveSensor.get()));
+          model.actuators.getValue().forEach(act -> {
+            if(act.getPosition() == act.getTargetPosition()){
+              setTargetPosition(act, mostActiveSensor.get());
+            }
+          });
 
           model.actuators.getValue().forEach(act ->
               updateModel(set(act.mostActiveAngle, (double) act.getPosition()),
-                  set(act.viewPortAngle,   180 + act.getPosition() - act.faceAngle.getValue())
-              ));
+                          set(act.viewPortAngle,   180 + act.getPosition() - act.faceAngle.getValue())
+              )
+          );
         }
       }
     }).start();
