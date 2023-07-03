@@ -15,7 +15,7 @@ dependencies {
 
     // This dependency is used by the application.
 //    implementation 'com.google.guava:guava:31.1-jre'
-    implementation files('libs/fhnw-iot-bricks-0.0.1.jar')
+    implementation files('libs/fhnw-iot-bricks-0.0.2.jar')
 //    implementation group: 'com.neuronrobotics', name: 'nrjavaserial', version: '5.2.1'
 //    implementation group: 'com.eclipsesource.minimal-json', name: 'minimal-json', version: '0.9.5'
     implementation group: 'org.eclipse.paho', name: 'org.eclipse.paho.client.mqttv3', version: '1.2.5'

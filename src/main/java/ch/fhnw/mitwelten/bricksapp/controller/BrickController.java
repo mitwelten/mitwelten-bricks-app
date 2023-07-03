@@ -42,21 +42,14 @@ public class BrickController extends ControllerBase<Garden> {
         Optional<DistanceBrickData> mostActiveSensor = updateMostActiveSensor(model.sensors.getValue());
 
         proxyGroup.waitForUpdate();
+
         if(mostActiveSensor.isPresent()){
           model.actuators.getValue().forEach(brick -> setTargetPosition(brick, mostActiveSensor.get()));
-          do {
-            proxyGroup.waitForUpdate();
-            model.actuators.getValue().forEach(a -> {
-              System.out.println("vbat: " + a.getBatteryVoltage());
-              System.out.println("time: " + a.getTimestamp());
-              System.out.println("pos: " + a.getPosition());
 
-            });
-            model.actuators.getValue().forEach(act ->
-                updateModel(set(act.mostActiveAngle, (double) act.getPosition()),
-                            set(act.viewPortAngle,   180 + act.getPosition() - act.faceAngle.getValue())
-                ));
-          } while(!allActuatorsReachedPosition());
+          model.actuators.getValue().forEach(act ->
+              updateModel(set(act.mostActiveAngle, (double) act.getPosition()),
+                  set(act.viewPortAngle,   180 + act.getPosition() - act.faceAngle.getValue())
+              ));
         }
       }
     }).start();
