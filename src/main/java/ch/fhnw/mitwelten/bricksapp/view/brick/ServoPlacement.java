@@ -43,16 +43,16 @@ public class ServoPlacement extends BrickPlacement {
 
     Circle outerCircle = new Circle(BrickNode.CENTER_X, BrickNode.CENTER_Y, outerCircleRadius);
     Circle innerCircle = new Circle(BrickNode.CENTER_X, BrickNode.CENTER_Y, innerCircleRadius);
-    innerCircle.setFill(Color.LIGHTGRAY);
-    outerCircle.setFill(Color.GREY);
+    innerCircle.setFill  (Color.LIGHTGRAY);
+    outerCircle.setFill  (Color.GREY);
     innerCircle.setStroke(Color.BLACK);
     outerCircle.setStroke(Color.BLACK);
 
-    BrickNode brickIcon = new BrickNode(Color.BLUE);
-    Region brickArea    = new Region();
+    BrickNode brickIcon   = new BrickNode(Color.BLUE);
+    Region brickArea      = new Region();
+    BackgroundFill bgFill = new BackgroundFill(Color.TRANSPARENT, null, null);
     brickArea.setMinWidth (BrickNode.SYMBOL_WIDTH);
     brickArea.setMinHeight(BrickNode.SYMBOL_HEIGHT);
-    BackgroundFill bgFill = new BackgroundFill(Color.TRANSPARENT, null, null);
     brickArea.setBackground(new Background(bgFill));
 
     servoShape = new Group(

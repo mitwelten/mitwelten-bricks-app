@@ -36,39 +36,62 @@ public class BrickController extends ControllerBase<Garden> {
   private void updateLoop() {
     new Thread(() -> {
       while(true) {
-        proxyGroup.waitForUpdate();
         model.sensors.getValue().forEach(brick ->
-            updateModel(
-                set(brick.value, brick.getDistance()),
-                set(brick.isMostActive, false)
-            ));
-        updateActorPositions(model.sensors.getValue());
+            updateModel(set(brick.value, brick.getDistance())));
+
+        Optional<DistanceBrickData> mostActiveSensor = updateMostActiveSensor(model.sensors.getValue());
+
+        proxyGroup.waitForUpdate();
+        if(mostActiveSensor.isPresent()){
+          model.actuators.getValue().forEach(brick -> setTargetPosition(brick, mostActiveSensor.get()));
+          do {
+            proxyGroup.waitForUpdate();
+            model.actuators.getValue().forEach(a -> {
+              System.out.println("vbat: " + a.getBatteryVoltage());
+              System.out.println("time: " + a.getTimestamp());
+              System.out.println("pos: " + a.getPosition());
+
+            });
+            model.actuators.getValue().forEach(act ->
+                updateModel(set(act.mostActiveAngle, (double) act.getPosition()),
+                            set(act.viewPortAngle,   180 + act.getPosition() - act.faceAngle.getValue())
+                ));
+          } while(!allActuatorsReachedPosition());
+        }
       }
     }).start();
   }
 
-  private void updateActorPositions(List<DistanceBrickData> bricks){
-    Optional<DistanceBrickData> maybeBrick = bricks
+  private boolean allActuatorsReachedPosition(){
+    return model.actuators.getValue()
         .stream()
-        .min(Comparator.comparing(DistanceBrickData::getDistance));
-
-    maybeBrick.ifPresent(distanceBrickData -> {
-      updateModel(set(distanceBrickData.isMostActive, true));
-      model.actuators.getValue().forEach(brick -> updateServoAngles(brick, maybeBrick.get()));
-    });
+        .map(act -> act.getPosition() == act.getTargetPosition())
+        .reduce(true, (acc, cur) -> cur && acc);
   }
 
-  private void updateServoAngles(ServoBrickData servo, DistanceBrickData mostActivePlacement) {
+  private Optional<DistanceBrickData> updateMostActiveSensor(List<DistanceBrickData> bricks){
+    if(bricks.isEmpty()) return Optional.empty();
+
+    Optional<DistanceBrickData> maybeSensor = bricks
+        .stream()
+        .peek(brick -> updateModel(set(brick.isMostActive, false)))
+        .min(Comparator.comparing(DistanceBrickData::getDistance));
+
+    maybeSensor.ifPresent(brick ->
+        updateModel(set(maybeSensor.get().isMostActive, true)));
+
+    return maybeSensor;
+  }
+
+  private void setTargetPosition(ServoBrickData servo, DistanceBrickData mostActivePlacement) {
     Location mostActive    = mostActivePlacement.location.getValue();
     Location servoLocation = servo.location.getValue();
 
     double dLat  = mostActive.lat() - servoLocation.lat();
     double dLong = mostActive.lon() - servoLocation.lon();
     double angle = Util.calcAngle(dLong, dLat);
-    int pos      = Util.calculateServoPositionFromAngle(servo, angle);
-//        servo.adjustServoPosition(pos);
-    updateModel(set(servo.mostActiveAngle, angle - servo.faceAngle.getValue()));
-    updateModel(set(servo.viewPortAngle, 180 + angle - 2 * servo.faceAngle.getValue()));
+//    int pos      = Util.calculateServoPositionFromAngle(servo, angle);
+    servo.setPosition((int) (angle - servo.faceAngle.getValue()));
   }
 
   public void move(Location target, BrickData brick){

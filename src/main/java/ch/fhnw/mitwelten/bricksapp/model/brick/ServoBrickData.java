@@ -5,30 +5,45 @@
 
 package ch.fhnw.mitwelten.bricksapp.model.brick;
 
-import ch.fhnw.imvs.bricks.actuators.ServoBrick;
+import ch.fhnw.imvs.bricks.actuators.StepperBrick;
 import ch.fhnw.mitwelten.bricksapp.util.mvcbase.ObservableValue;
 
 public class ServoBrickData extends BrickData {
 
     public final ObservableValue<Double> mostActiveAngle;
     public final ObservableValue<Double> viewPortAngle;
-    private final ServoBrick inner;
+    private final StepperBrick inner;
+    private int target = 0;
 
-    public ServoBrickData(ServoBrick inner) {
+    public ServoBrickData(StepperBrick inner) {
         super(inner);
         this.inner = inner;
         mostActiveAngle = new ObservableValue<>(0d);
         viewPortAngle   = new ObservableValue<>(0d);
     }
 
-    public void getPosition(int i) {
-        inner.setPosition(i);
+    public int getPosition(){
+        return inner.getPosition();
+    }
+
+    public void setPosition(int i) {
+        try {
+            inner.setPosition(i);
+            target = i;
+        } catch (IllegalArgumentException e){
+            System.err.println("Could not set target position!");
+            System.err.println(e.getMessage());
+        }
+    }
+
+    public int getTargetPosition(){
+        return target;
     }
 
     @Override
     public String toStringFormatted() {
         return super.toStringFormatted()
-            + "\nval:\t:" + Math.round(mostActiveAngle.getValue());
+            + "\nval:\t" + Math.round(mostActiveAngle.getValue());
     }
 
     @Override

@@ -6,6 +6,7 @@
 package ch.fhnw.mitwelten.bricksapp.controller;
 
 import ch.fhnw.imvs.bricks.actuators.ServoBrick;
+import ch.fhnw.imvs.bricks.actuators.StepperBrick;
 import ch.fhnw.imvs.bricks.sensors.DistanceBrick;
 import ch.fhnw.mitwelten.bricksapp.model.Garden;
 import ch.fhnw.mitwelten.bricksapp.model.Notification.Notification;
@@ -28,7 +29,7 @@ import static ch.fhnw.mitwelten.bricksapp.util.ConfigIOHandler.writeToFile;
 public class MenuController extends ControllerBase<Garden> {
 
   private int mockIdCounter  = 0;
-  private double spiralValue = 5d;
+  double spiralValue = 5d;
 
   private final Set<String> mqttIds;
 
@@ -39,7 +40,7 @@ public class MenuController extends ControllerBase<Garden> {
 
   public ServoBrickData createMockActuator(){
     String id = createMockId();
-    ServoBrickData newBrick = new ServoBrickData(ServoBrick.connect(model.mockProxy, id));
+    ServoBrickData newBrick = new ServoBrickData(StepperBrick.connect(model.mockProxy, id));
     addActuator(newBrick);
     return newBrick;
   }
@@ -60,7 +61,7 @@ public class MenuController extends ControllerBase<Garden> {
 
   public Optional<ServoBrickData> createMqttActuator(String id){
     if(isMqttIdAssigned(id)) return Optional.empty();
-    ServoBrickData newBrick = new ServoBrickData(ServoBrick.connect(model.mqttProxy, id));
+    ServoBrickData newBrick = new ServoBrickData(StepperBrick.connect(model.mqttProxy, id));
     addActuator(newBrick);
     return Optional.of(newBrick);
   }

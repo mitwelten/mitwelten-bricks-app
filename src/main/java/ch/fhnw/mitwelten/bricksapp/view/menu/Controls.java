@@ -96,10 +96,6 @@ public class Controls extends GridPane {
     mqttBricksTitle  .setFont(Font.font("Tahoma", FontWeight.LIGHT, 10));
     simBricksTitle   .setFont(Font.font("Tahoma", FontWeight.LIGHT, 10));
 
-    addMqttActuator  .setDisable(true);
-    actuatorId       .setDisable(true);
-    mqttUrl          .setDisable(true);
-
     addActuatorButton.setPrefWidth(DEFAULT_NODE_WIDTH);
     addSensorButton  .setPrefWidth(DEFAULT_NODE_WIDTH);
     addMqttActuator  .setPrefWidth(DEFAULT_NODE_WIDTH);
