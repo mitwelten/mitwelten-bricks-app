@@ -22,7 +22,9 @@ import java.util.Optional;
 public class BrickController extends ControllerBase<Garden> {
 
   private final ProxyGroup proxyGroup;
-
+  private DistanceBrickData mostActive;
+  private final Runnable updateLoopThread;
+  private boolean stopUpdateLoop = false;
 
   public BrickController(Garden model) {
     super(model);
@@ -31,55 +33,79 @@ public class BrickController extends ControllerBase<Garden> {
     proxyGroup.addProxy(model.mockProxy);
     proxyGroup.addProxy(model.mqttProxy);
 
-    updateLoop();
+    updateLoopThread = initializeUpdateLoop(model);
+    addBrickListsListener();
   }
 
-  private void updateLoop() {
-    new Thread(() -> {
-      while(true) {
+  private Runnable initializeUpdateLoop(Garden model) {
+    final Runnable updateLoopThread;
+
+    updateLoopThread = (() -> {
+      while(!stopUpdateLoop) {
+
+        // update all distance-sensor values
         model.sensors.getValue().forEach(brick ->
             updateModel(set(brick.value, brick.getDistance())));
 
-        Optional<DistanceBrickData> mostActiveSensor = updateMostActiveSensor(model.sensors.getValue());
+        DistanceBrickData mostActiveSensor = updateMostActiveSensor(model.sensors.getValue());
 
         proxyGroup.waitForUpdate();
 
-        if(mostActiveSensor.isPresent()){
-          model.actuators.getValue().forEach(act -> {
-            if(act.getPosition() == act.getTargetPosition()){
-              setTargetPosition(act, mostActiveSensor.get());
-            }
-          });
+        mostActive = mostActiveSensor;
 
-          model.actuators.getValue().forEach(act ->
-              updateModel(set(act.mostActiveAngle, (double) act.getPosition()),
-                          set(act.viewPortAngle,   180 + act.getPosition() - act.faceAngle.getValue())
-              )
-          );
-        }
+        // update target position of actuators
+        model.actuators.getValue().forEach(act -> {
+
+          // only set target position to actuators which are reached their target position
+          if(act.getPosition() == act.getTargetPosition()){
+            setTargetPosition(act, mostActiveSensor);
+          }
+        });
+        updateActuatorVisualization();
       }
-    }).start();
+    });
+    return updateLoopThread;
   }
 
-  private boolean allActuatorsReachedPosition(){
-    return model.actuators.getValue()
-        .stream()
-        .map(act -> act.getPosition() == act.getTargetPosition())
-        .reduce(true, (acc, cur) -> cur && acc);
+  private void addBrickListsListener() {
+    model.sensors.onChange((old, newList)-> {
+      if(old.isEmpty() && !newList.isEmpty()){
+        startUpdateLoop();
+      } else if(!old.isEmpty() && newList.isEmpty()){
+        stopUpdateLoop();
+      }
+    });
   }
 
-  private Optional<DistanceBrickData> updateMostActiveSensor(List<DistanceBrickData> bricks){
-    if(bricks.isEmpty()) return Optional.empty();
+  private void updateActuatorVisualization() {
+    model.actuators.getValue().forEach(act ->
+        updateModel(set(act.mostActiveAngle, (double) act.getPosition()),
+            set(act.viewPortAngle,   180 + act.getPosition() - act.faceAngle.getValue())
+        )
+    );
+  }
 
+  private void startUpdateLoop() {
+    stopUpdateLoop = false;
+    new Thread(updateLoopThread).start();
+  }
+
+  private void stopUpdateLoop() {
+    stopUpdateLoop = true;
+  }
+
+  private DistanceBrickData updateMostActiveSensor(List<DistanceBrickData> bricks){
     Optional<DistanceBrickData> maybeSensor = bricks
         .stream()
         .peek(brick -> updateModel(set(brick.isMostActive, false)))
         .min(Comparator.comparing(DistanceBrickData::getDistance));
 
-    maybeSensor.ifPresent(brick ->
-        updateModel(set(maybeSensor.get().isMostActive, true)));
-
-    return maybeSensor;
+    if (maybeSensor.isPresent()){
+      updateModel(set(maybeSensor.get().isMostActive, true));
+      return maybeSensor.get();
+    } else {
+      return mostActive;
+    }
   }
 
   private void setTargetPosition(ServoBrickData servo, DistanceBrickData mostActivePlacement) {
