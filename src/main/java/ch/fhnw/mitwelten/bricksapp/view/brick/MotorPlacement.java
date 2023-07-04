@@ -7,7 +7,7 @@ package ch.fhnw.mitwelten.bricksapp.view.brick;
 
 import ch.fhnw.mitwelten.bricksapp.controller.ApplicationController;
 import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.ServoBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.MotorBrickData;
 import javafx.scene.Group;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -17,16 +17,16 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.transform.Rotate;
 
-public class ServoPlacement extends BrickPlacement {
+public class MotorPlacement extends BrickPlacement {
 
-  private final ServoBrickData brick;
-  private Group  servoShape;
+  private final MotorBrickData brick;
+  private Group  motorShape;
   private Rotate mostActiveSensorAngle;
   private Rotate frontViewAngle;
 
-  public ServoPlacement(ApplicationController controller, BrickData brick) {
+  public MotorPlacement(ApplicationController controller, BrickData brick) {
     super(controller, brick, () -> controller.removeBrick(brick));
-    this.brick = (ServoBrickData) brick;
+    this.brick = (MotorBrickData) brick;
 
     initializeControls();
     layoutControls();
@@ -55,7 +55,7 @@ public class ServoPlacement extends BrickPlacement {
     brickArea.setMinHeight(BrickNode.SYMBOL_HEIGHT);
     brickArea.setBackground(new Background(bgFill));
 
-    servoShape = new Group(
+    motorShape = new Group(
         brickArea,
         brickIcon,
         outerCircle,
@@ -63,7 +63,7 @@ public class ServoPlacement extends BrickPlacement {
         innerCircle,
         frontViewIndicator
     );
-    servoShape.setRotate(faceAngle);
+    motorShape.setRotate(faceAngle);
   }
 
   private Line createLine(double radius, Rotate angle) {
@@ -76,7 +76,7 @@ public class ServoPlacement extends BrickPlacement {
   }
 
   public void setRotateBrickSymbol(double angel){
-    servoShape.setRotate(angel);
+    motorShape.setRotate(angel);
   }
 
   public void setMostActiveSensorAngle(double angle) {
@@ -88,11 +88,11 @@ public class ServoPlacement extends BrickPlacement {
   }
 
   private void layoutControls() {
-    super.getChildren().addAll(servoShape);
+    super.getChildren().addAll(motorShape);
   }
 
   @Override
-  public  ServoBrickData getBrick() {
+  public MotorBrickData getBrick() {
     return brick;
   }
 }

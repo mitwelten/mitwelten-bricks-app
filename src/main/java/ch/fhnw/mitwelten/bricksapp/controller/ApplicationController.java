@@ -8,7 +8,7 @@ package ch.fhnw.mitwelten.bricksapp.controller;
 import ch.fhnw.mitwelten.bricksapp.model.Garden;
 import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.DistanceBrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.ServoBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.MotorBrickData;
 import ch.fhnw.mitwelten.bricksapp.util.Location;
 import ch.fhnw.mitwelten.bricksapp.util.mvcbase.ControllerBase;
 
@@ -16,7 +16,7 @@ import java.io.File;
 
 public class ApplicationController extends ControllerBase<Garden> {
   private final BrickController brickController;
-  private final MenuController menuController;
+  private final MenuController  menuController;
 
   public ApplicationController(Garden model) {
     super(model);
@@ -54,16 +54,20 @@ public class ApplicationController extends ControllerBase<Garden> {
   public void removeBrick(BrickData data) {
     brickController.removeBrick(data);
   }
+
   // Menu Controller delegation
-  public ServoBrickData createMockActuator() {
+  public MotorBrickData createMockActuator() {
     return menuController.createMockActuator();
   }
+
   public DistanceBrickData createMockSensor() {
     return menuController.createMockSensor();
   }
+
   public void createMqttSensor(String id) {
     menuController.createMqttSensor(id);
   }
+
   public void createMqttActuator(String id) {
     menuController.createMqttActuator(id);
   }

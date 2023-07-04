@@ -13,7 +13,7 @@ import ch.fhnw.mitwelten.bricksapp.util.Constants;
 import ch.fhnw.mitwelten.bricksapp.util.mvcbase.ViewMixin;
 import ch.fhnw.mitwelten.bricksapp.view.brick.BrickPlacement;
 import ch.fhnw.mitwelten.bricksapp.view.brick.DistancePlacement;
-import ch.fhnw.mitwelten.bricksapp.view.brick.ServoPlacement;
+import ch.fhnw.mitwelten.bricksapp.view.brick.MotorPlacement;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ProgressIndicator;
@@ -78,13 +78,13 @@ public class GardenGUI extends Pane implements ViewMixin<Garden, ApplicationCont
             removePlacement(oldValue, newValue);
           } else {
             if (newValue.isEmpty()) return;
-            ServoPlacement sp = addPlacement(
+            MotorPlacement mp = addPlacement(
                 model,
                 oldValue,
                 newValue,
-                (brick) -> new ServoPlacement(controller, brick)
+                (brick) -> new MotorPlacement(controller, brick)
             );
-            addActuatorListeners(sp);
+            addActuatorListeners(mp);
           }
         }
     );
@@ -168,7 +168,7 @@ public class GardenGUI extends Pane implements ViewMixin<Garden, ApplicationCont
         -> placement.setHighlighted(newVal));
   }
 
-  private void addActuatorListeners(ServoPlacement placement) {
+  private void addActuatorListeners(MotorPlacement placement) {
     onChangeOf(placement.getBrick().mostActiveAngle).execute((oldVal, newVal) -> {
       placement.setMostActiveSensorAngle(newVal);
       refreshLabel(placement);

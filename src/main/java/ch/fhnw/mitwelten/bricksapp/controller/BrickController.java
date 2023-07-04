@@ -9,7 +9,7 @@ import ch.fhnw.imvs.bricks.core.ProxyGroup;
 import ch.fhnw.mitwelten.bricksapp.model.Garden;
 import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.DistanceBrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.ServoBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.MotorBrickData;
 import ch.fhnw.mitwelten.bricksapp.util.Location;
 import ch.fhnw.mitwelten.bricksapp.util.Util;
 import ch.fhnw.mitwelten.bricksapp.util.mvcbase.ControllerBase;
@@ -108,15 +108,15 @@ public class BrickController extends ControllerBase<Garden> {
     }
   }
 
-  private void setTargetPosition(ServoBrickData servo, DistanceBrickData mostActivePlacement) {
+  private void setTargetPosition(MotorBrickData motor, DistanceBrickData mostActivePlacement) {
     Location mostActive    = mostActivePlacement.location.getValue();
-    Location servoLocation = servo.location.getValue();
+    Location motorLocation = motor.location.getValue();
 
-    double dLat  = mostActive.lat() - servoLocation.lat();
-    double dLong = mostActive.lon() - servoLocation.lon();
+    double dLat  = mostActive.lat() - motorLocation.lat();
+    double dLong = mostActive.lon() - motorLocation.lon();
     double angle = Util.calcAngle(dLong, dLat);
-//    int pos      = Util.calculateServoPositionFromAngle(servo, angle);
-    servo.setPosition((int) (angle - servo.faceAngle.getValue()));
+//    int pos      = Util.calculateServoPositionFromAngle(motor, angle);
+    motor.setPosition((int) (angle - motor.faceAngle.getValue()));
   }
 
   public void move(Location target, BrickData brick){
@@ -133,7 +133,7 @@ public class BrickController extends ControllerBase<Garden> {
 
   public void removeBrick(BrickData data) {
     if(data instanceof DistanceBrickData) removeBrick((DistanceBrickData) data);
-    if(data instanceof ServoBrickData)    removeBrick((ServoBrickData) data);
+    if(data instanceof MotorBrickData)    removeBrick((MotorBrickData) data);
   }
 
   private void removeBrick(DistanceBrickData data) {
@@ -144,8 +144,8 @@ public class BrickController extends ControllerBase<Garden> {
     updateModel(set(model.sensors, modified));
   }
 
-  private void removeBrick(ServoBrickData data) {
-    List<ServoBrickData> modified = new ArrayList<>(model.actuators.getValue())
+  private void removeBrick(MotorBrickData data) {
+    List<MotorBrickData> modified = new ArrayList<>(model.actuators.getValue())
         .stream()
         .filter(b -> !b.getID().equals(data.getID()))
         .toList();

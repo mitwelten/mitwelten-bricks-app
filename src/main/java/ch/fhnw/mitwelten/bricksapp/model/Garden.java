@@ -9,7 +9,7 @@ import ch.fhnw.imvs.bricks.mock.MockProxy;
 import ch.fhnw.imvs.bricks.mqtt.MqttProxy;
 import ch.fhnw.mitwelten.bricksapp.model.Notification.Notification;
 import ch.fhnw.mitwelten.bricksapp.model.brick.DistanceBrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.ServoBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.MotorBrickData;
 import ch.fhnw.mitwelten.bricksapp.util.Constants;
 import ch.fhnw.mitwelten.bricksapp.util.mvcbase.ObservableValue;
 
@@ -18,7 +18,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Garden {
   public final ObservableValue<List<DistanceBrickData>> sensors             = new ObservableValue<>(new CopyOnWriteArrayList<>());
-  public final ObservableValue<List<ServoBrickData>>    actuators           = new ObservableValue<>(new CopyOnWriteArrayList<>());
+  public final ObservableValue<List<MotorBrickData>>    actuators           = new ObservableValue<>(new CopyOnWriteArrayList<>());
   public final ObservableValue<Boolean>                 isLoading           = new ObservableValue<>(false);
   public final ObservableValue<Boolean>                 removeButtonVisible = new ObservableValue<>(false);
   public final ObservableValue<Deque<Notification>>     notifications       = new ObservableValue<>(new ArrayDeque<>());

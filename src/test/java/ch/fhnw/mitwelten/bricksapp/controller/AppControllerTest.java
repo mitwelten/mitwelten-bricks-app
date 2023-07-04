@@ -1,9 +1,8 @@
 package ch.fhnw.mitwelten.bricksapp.controller;
 
-import ch.fhnw.mitwelten.bricksapp.controller.ApplicationController;
 import ch.fhnw.mitwelten.bricksapp.model.Garden;
 import ch.fhnw.mitwelten.bricksapp.model.brick.DistanceBrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.ServoBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.MotorBrickData;
 import ch.fhnw.mitwelten.bricksapp.util.Constants;
 import ch.fhnw.mitwelten.bricksapp.util.Location;
 import org.junit.jupiter.api.Test;
@@ -59,13 +58,13 @@ public class AppControllerTest {
   }
 
   @Test
-  void testAddAndRemoveServoBrick() {
+  void testAddAndRemoveMotorBrick() {
     //given
     Garden model = new Garden();
     ApplicationController controller = new ApplicationController(model);
 
     //when
-    ServoBrickData brick = controller.createMockActuator();
+    MotorBrickData brick = controller.createMockActuator();
     controller.awaitCompletion();
 
     //then
@@ -85,7 +84,7 @@ public class AppControllerTest {
     //given
     Garden model = new Garden();
     ApplicationController controller = new ApplicationController(model);
-    ServoBrickData    servo    = controller.createMockActuator();
+    MotorBrickData motor = controller.createMockActuator();
     DistanceBrickData distance = controller.createMockSensor();
 
     double lat = 123.45, lon = 54.321;
@@ -93,7 +92,7 @@ public class AppControllerTest {
     Location initialLocation = new Location(Constants.SPAWN_POSITION_X, Constants.SPAWN_POSITION_Y);
 
     //when
-    controller.move(target, servo);
+    controller.move(target, motor);
     controller.move(target, distance);
     controller.awaitCompletion();
 
@@ -102,7 +101,7 @@ public class AppControllerTest {
     assertEquals(target, model.sensors  .getValue().get(0).location.getValue());
 
     //when
-    controller.move(initialLocation, servo);
+    controller.move(initialLocation, motor);
     controller.move(initialLocation, distance);
     controller.awaitCompletion();
 

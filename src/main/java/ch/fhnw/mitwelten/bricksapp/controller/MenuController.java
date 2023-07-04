@@ -5,7 +5,6 @@
 
 package ch.fhnw.mitwelten.bricksapp.controller;
 
-import ch.fhnw.imvs.bricks.actuators.ServoBrick;
 import ch.fhnw.imvs.bricks.actuators.StepperBrick;
 import ch.fhnw.imvs.bricks.sensors.DistanceBrick;
 import ch.fhnw.mitwelten.bricksapp.model.Garden;
@@ -13,7 +12,7 @@ import ch.fhnw.mitwelten.bricksapp.model.Notification.Notification;
 import ch.fhnw.mitwelten.bricksapp.model.Notification.NotificationType;
 import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.DistanceBrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.ServoBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.MotorBrickData;
 import ch.fhnw.mitwelten.bricksapp.util.Constants;
 import ch.fhnw.mitwelten.bricksapp.util.Location;
 import ch.fhnw.mitwelten.bricksapp.util.Util;
@@ -29,7 +28,7 @@ import static ch.fhnw.mitwelten.bricksapp.util.ConfigIOHandler.writeToFile;
 public class MenuController extends ControllerBase<Garden> {
 
   private int mockIdCounter  = 0;
-  double spiralValue = 5d;
+  private double spiralValue = 5d;
 
   private final Set<String> mqttIds;
 
@@ -38,9 +37,9 @@ public class MenuController extends ControllerBase<Garden> {
     mqttIds = new HashSet<>();
   }
 
-  public ServoBrickData createMockActuator(){
+  public MotorBrickData createMockActuator(){
     String id = createMockId();
-    ServoBrickData newBrick = new ServoBrickData(StepperBrick.connect(model.mockProxy, id));
+    MotorBrickData newBrick = new MotorBrickData(StepperBrick.connect(model.mockProxy, id));
     addActuator(newBrick);
     return newBrick;
   }
@@ -59,9 +58,9 @@ public class MenuController extends ControllerBase<Garden> {
     return Optional.of(newBrick);
   }
 
-  public Optional<ServoBrickData> createMqttActuator(String id){
+  public Optional<MotorBrickData> createMqttActuator(String id){
     if(isMqttIdAssigned(id)) return Optional.empty();
-    ServoBrickData newBrick = new ServoBrickData(StepperBrick.connect(model.mqttProxy, id));
+    MotorBrickData newBrick = new MotorBrickData(StepperBrick.connect(model.mqttProxy, id));
     addActuator(newBrick);
     return Optional.of(newBrick);
   }
@@ -76,7 +75,7 @@ public class MenuController extends ControllerBase<Garden> {
     this.awaitCompletion();
   }
 
-  private void addActuator(ServoBrickData brick) {
+  private void addActuator(MotorBrickData brick) {
     var list = new ArrayList<>(model.actuators.getValue());
     list.add(brick);
     updateModel(
@@ -161,7 +160,7 @@ public class MenuController extends ControllerBase<Garden> {
     Optional<? extends BrickData> brick = Optional.empty();
     boolean isMock = Boolean.parseBoolean(line[0]);
     boolean isSensor   = line[1].contains(DistanceBrick.class.getSimpleName());
-    boolean isActuator = line[1].contains(ServoBrick   .class.getSimpleName());
+    boolean isActuator = line[1].contains(StepperBrick .class.getSimpleName());
 
     if(isMock){
       if(isSensor)   brick = Optional.of(createMockSensor());

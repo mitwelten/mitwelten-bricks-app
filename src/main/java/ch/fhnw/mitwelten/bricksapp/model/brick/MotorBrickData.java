@@ -5,17 +5,17 @@
 
 package ch.fhnw.mitwelten.bricksapp.model.brick;
 
-import ch.fhnw.imvs.bricks.actuators.StepperBrick;
+import ch.fhnw.imvs.bricks.impl.AnalogOutputBrick;
 import ch.fhnw.mitwelten.bricksapp.util.mvcbase.ObservableValue;
 
-public class ServoBrickData extends BrickData {
+public class MotorBrickData extends BrickData {
 
     public final ObservableValue<Double> mostActiveAngle;
     public final ObservableValue<Double> viewPortAngle;
-    private final StepperBrick inner;
+    private final AnalogOutputBrick inner;
     private int target = 0;
 
-    public ServoBrickData(StepperBrick inner) {
+    public MotorBrickData(AnalogOutputBrick inner) {
         super(inner);
         this.inner = inner;
         mostActiveAngle = new ObservableValue<>(0d);
@@ -48,6 +48,6 @@ public class ServoBrickData extends BrickData {
 
     @Override
     public String toString() {
-        return "ServoBrick" + "," + super.toString();
+        return "Actuator," + super.toString();
     }
 }
