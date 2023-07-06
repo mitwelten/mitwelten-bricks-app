@@ -8,14 +8,22 @@ package ch.fhnw.mitwelten.bricksapp.view.brick;
 import ch.fhnw.mitwelten.bricksapp.controller.ApplicationController;
 import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.MotorBrickData;
+import javafx.geometry.Bounds;
+import javafx.geometry.Insets;
 import javafx.scene.Group;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.Region;
+import javafx.scene.control.Button;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.Tooltip;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.transform.Rotate;
+
+import javax.tools.Tool;
+
 
 public class MotorPlacement extends BrickPlacement {
 
@@ -64,6 +72,30 @@ public class MotorPlacement extends BrickPlacement {
         frontViewIndicator
     );
     motorShape.setRotate(faceAngle);
+  }
+
+  @Override
+  protected Pane labelHook(Pane group) {
+    Pane anchorPane = new AnchorPane();
+    Button fnTest = new Button();
+    fnTest.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+    fnTest.getStyleClass().add("icon-button");
+
+    fnTest.setTooltip(new Tooltip("Run Function Test!"));
+
+    Region icon = new Region();
+    icon.getStyleClass().add("icon");
+    fnTest.setGraphic(icon);
+
+    AnchorPane.setBottomAnchor(fnTest, 15.0);
+    AnchorPane.setRightAnchor (fnTest, 5.0);
+
+    fnTest.setOnAction(e -> {
+      System.out.println(group.getBoundsInParent().getWidth());
+    });
+
+    anchorPane.getChildren().addAll(group, fnTest);
+    return anchorPane;
   }
 
   private Line createLine(double radius, Rotate angle) {

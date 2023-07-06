@@ -151,18 +151,10 @@ public class BrickController extends ControllerBase<Garden> {
   }
 
   public void test() {
-    new Thread(() -> {
-      System.out.println("Start Test...");
-      MotorBrickData motor = model.actuators.getValue()
-          .stream()
-          .filter(mot -> Objects.equals(mot.getID(), "0000-0008"))
-          .findFirst()
-          .orElseThrow(IllegalArgumentException::new);
-
-      motor.setPosition(45);
-      motor.setPosition(90);
-      System.out.println("Test ended!");
-
-    }).start();
+    if(stopUpdateLoop){
+      startUpdateLoop();
+    }else {
+      stopUpdateLoop();
+    }
   }
 }

@@ -62,6 +62,7 @@ public class AppStarter extends Application {
     gui.setCenter(background);
 
     Scene scene = new Scene(gui);
+    scene.getStylesheets().add("styles/stylesheet.css");
     addKeyListener(scene);
 
     primaryStage.setScene(scene);
