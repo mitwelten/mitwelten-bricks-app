@@ -83,4 +83,8 @@ public class ApplicationController extends ControllerBase<Garden> {
   public void exportToFile(File file) {
     menuController.exportToFile(file);
   }
+
+  public void test() {
+    brickController.test();
+  }
 }

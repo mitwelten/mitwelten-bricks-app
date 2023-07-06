@@ -14,10 +14,7 @@ import ch.fhnw.mitwelten.bricksapp.util.Location;
 import ch.fhnw.mitwelten.bricksapp.util.Util;
 import ch.fhnw.mitwelten.bricksapp.util.mvcbase.ControllerBase;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class BrickController extends ControllerBase<Garden> {
 
@@ -43,25 +40,25 @@ public class BrickController extends ControllerBase<Garden> {
     updateLoopThread = (() -> {
       while(!stopUpdateLoop) {
 
-        // update all distance-sensor values
+        // update all sensor values
         model.sensors.getValue().forEach(brick ->
             updateModel(set(brick.value, brick.getDistance())));
 
+        // update most active sensor (acts as target position)
         DistanceBrickData mostActiveSensor = updateMostActiveSensor(model.sensors.getValue());
-
-        proxyGroup.waitForUpdate();
-
         mostActive = mostActiveSensor;
 
-        // update target position of actuators
+        // update actuator target position
         model.actuators.getValue().forEach(act -> {
 
-          // only set target position to actuators which are reached their target position
+          // update only the actuators that have reached the last target value
           if(act.getPosition() == act.getTargetPosition()){
             setTargetPosition(act, mostActiveSensor);
           }
         });
         updateActuatorVisualization();
+
+        proxyGroup.waitForUpdate();
       }
     });
     return updateLoopThread;
@@ -78,9 +75,9 @@ public class BrickController extends ControllerBase<Garden> {
   }
 
   private void updateActuatorVisualization() {
-    model.actuators.getValue().forEach(act ->
-        updateModel(set(act.mostActiveAngle, (double) act.getPosition()),
-            set(act.viewPortAngle,   180 + act.getPosition() - act.faceAngle.getValue())
+    model.actuators.getValue().forEach(motor ->
+        updateModel(set(motor.mostActiveAngle, (double) motor.getPosition()),
+                    set(motor.viewPortAngle,   180 + motor.getPosition() - motor.faceAngle.getValue())
         )
     );
   }
@@ -112,11 +109,12 @@ public class BrickController extends ControllerBase<Garden> {
     Location mostActive    = mostActivePlacement.location.getValue();
     Location motorLocation = motor.location.getValue();
 
-    double dLat  = mostActive.lat() - motorLocation.lat();
-    double dLong = mostActive.lon() - motorLocation.lon();
-    double angle = Util.calcAngle(dLong, dLat);
-//    int pos      = Util.calculateServoPositionFromAngle(motor, angle);
-    motor.setPosition((int) (angle - motor.faceAngle.getValue()));
+    double dLat   = mostActive.lat() - motorLocation.lat();
+    double dLong  = mostActive.lon() - motorLocation.lon();
+    double angle  = Util.calcAngle(dLong, dLat);
+    double target = Util.absolutToRelativ(motor, angle);
+
+    motor.setPosition((int) target);
   }
 
   public void move(Location target, BrickData brick){
@@ -150,5 +148,21 @@ public class BrickController extends ControllerBase<Garden> {
         .filter(b -> !b.getID().equals(data.getID()))
         .toList();
     updateModel(set(model.actuators, modified));
+  }
+
+  public void test() {
+    new Thread(() -> {
+      System.out.println("Start Test...");
+      MotorBrickData motor = model.actuators.getValue()
+          .stream()
+          .filter(mot -> Objects.equals(mot.getID(), "0000-0008"))
+          .findFirst()
+          .orElseThrow(IllegalArgumentException::new);
+
+      motor.setPosition(45);
+      motor.setPosition(90);
+      System.out.println("Test ended!");
+
+    }).start();
   }
 }

@@ -30,12 +30,13 @@ public abstract class BrickPlacement extends Group {
 
   protected double faceAngle;
 
-  protected Group  cross;
-  private Text     label;
-  private Region   labelBackground;
+  protected Group cross;
+
+  private Text   label;
+  private Region labelBackground;
 
   private final ApplicationController controller;
-  private final BrickData        brickData;
+  private final BrickData             brickData;
 
   public BrickPlacement(ApplicationController controller, BrickData brick, Runnable removeMe) {
     super();
@@ -60,7 +61,10 @@ public abstract class BrickPlacement extends Group {
       // need to be in separate if statements to work properly
       if(e.getDeltaY() < 0) dAngle = -2;
       if(e.getDeltaY() > 0) dAngle =  2;
-      controller.rotate(brickData.faceAngle.getValue() + dAngle, brickData);
+
+      double targetAngle = (brickData.faceAngle.getValue() + dAngle) % 360;
+      if (targetAngle < 0) targetAngle += 360;
+      controller.rotate(targetAngle, brickData);
     });
   }
 
