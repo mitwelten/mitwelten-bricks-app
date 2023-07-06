@@ -71,12 +71,16 @@ public class Util {
     throw new IllegalArgumentException("Angle could not be calculated");
   }
 
-  public static int calculateMotorPositionFromAngle(BrickData brick, double angle) {
+  public static int calculateServoPositionFromAngle(BrickData brick, double angle) {
     double result = angle - brick.faceAngle.getValue() + 90;
     if (result < 0) {
       result += 360.0;
     }
     return (int) result;
+  }
+
+  public static double absolutToRelativ(BrickData brick, double angle){
+    return (360 - (brick.faceAngle.getValue() - angle)) % 360;
   }
 
   public static Location toCoordinates(double x, double y) {
