@@ -87,4 +87,8 @@ public class ApplicationController extends ControllerBase<Garden> {
   public void functionTest(MotorBrickData brick, int[] positions) {
     brickController.functionTest(brick, positions);
   }
+
+  public void toggleUpdateLoop() {
+    brickController.toggleUpdateLoop();
+  }
 }

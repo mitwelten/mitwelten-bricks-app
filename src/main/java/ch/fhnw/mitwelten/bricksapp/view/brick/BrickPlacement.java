@@ -29,8 +29,7 @@ public abstract class BrickPlacement extends Group {
 
   protected Group cross;
 
-  private Text   label;
-  private Region labelBackground;
+  private Text label;
   private Pane labelGroup;
 
   private final ApplicationController controller;
@@ -46,24 +45,18 @@ public abstract class BrickPlacement extends Group {
   }
 
   private void layoutControls() {
-//    int padding   = 5;
-//    int margin    = 15;
-//    int marginTop = 15;
-//    label.relocate          (BrickNode.WIDTH_BRICK + margin,           - BrickNode.HEIGHT_BRICK + margin + marginTop);
-//    labelBackground.relocate(BrickNode.WIDTH_BRICK + margin - padding, - BrickNode.HEIGHT_BRICK + margin + marginTop - padding);
-
     super.getChildren().add(cross);
   }
 
   protected Pane labelHook(Pane group){
     return group;
-  };
+  }
 
   private void initializeControls(Runnable removeMe) {
     this.faceAngle = 0;
     this.setCursor(Cursor.HAND);
 
-    labelBackground = new Region();
+    Region labelBackground = new Region();
     labelBackground.setMinHeight(90);
     labelBackground.setMinWidth(105);
     labelBackground.relocate(-5, -15);
@@ -168,5 +161,4 @@ public abstract class BrickPlacement extends Group {
     if (isMirrored) line.setScaleX(-1.0); // mirroring
     return line;
   }
-
 }

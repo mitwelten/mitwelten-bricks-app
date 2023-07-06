@@ -23,7 +23,6 @@ public class BrickController extends ControllerBase<Garden> {
   private final ProxyGroup proxyGroup;
   private DistanceBrickData mostActive;
   private final Runnable updateLoopThread;
-  private boolean isUpdateLoopRunning = false;
 
   public BrickController(Garden model) {
     super(model);
@@ -33,14 +32,13 @@ public class BrickController extends ControllerBase<Garden> {
     proxyGroup.addProxy(model.mqttProxy);
 
     updateLoopThread = initializeUpdateLoop(model);
-    addBrickListsListener();
   }
 
   private Runnable initializeUpdateLoop(Garden model) {
     final Runnable updateLoopThread;
 
     updateLoopThread = (() -> {
-      while(isUpdateLoopRunning) {
+      while(model.runningUpdateLoop.getValue()) {
 
         // update all sensor values
         model.sensors.getValue().forEach(brick ->
@@ -64,17 +62,6 @@ public class BrickController extends ControllerBase<Garden> {
       }
     });
     return updateLoopThread;
-  }
-
-  private void addBrickListsListener() {
-    model.sensors.onChange((old, newList)-> {
-      if (
-           (old.isEmpty() && !newList.isEmpty()) // change from empty sensor list to at least one sensor
-        || (!old.isEmpty() &&  newList.isEmpty()) // stop loop since sensor list is empty
-      ){
-        toggleUpdateLoop();
-      }
-    });
   }
 
   private void updateActuatorVisualization() {
@@ -144,12 +131,12 @@ public class BrickController extends ControllerBase<Garden> {
     updateModel(set(model.actuators, modified));
   }
 
-  private void toggleUpdateLoop(){
-    if (!isUpdateLoopRunning){
-      isUpdateLoopRunning = true;
+  public void toggleUpdateLoop(){
+    if (!model.runningUpdateLoop.getValue()){
+      updateModel(set(model.runningUpdateLoop, true));
       new Thread(updateLoopThread).start();
     } else {
-      isUpdateLoopRunning = false;
+      updateModel(set(model.runningUpdateLoop, false));
     }
   }
 
@@ -166,8 +153,8 @@ public class BrickController extends ControllerBase<Garden> {
   public void functionTest(MotorBrickData brick, int[] positions) {
     new Thread( () -> {
 
-      boolean prevUpdateLoopState = isUpdateLoopRunning;
-      if(isUpdateLoopRunning) {
+      boolean prevUpdateLoopState = model.runningUpdateLoop.getValue();
+      if(prevUpdateLoopState) {
         toggleUpdateLoop();
       }
 

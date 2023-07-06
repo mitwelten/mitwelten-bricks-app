@@ -21,6 +21,7 @@ public class Garden {
   public final ObservableValue<List<MotorBrickData>>    actuators           = new ObservableValue<>(new CopyOnWriteArrayList<>());
   public final ObservableValue<Boolean>                 isLoading           = new ObservableValue<>(false);
   public final ObservableValue<Boolean>                 removeButtonVisible = new ObservableValue<>(false);
+  public final ObservableValue<Boolean>                 runningUpdateLoop   = new ObservableValue<>(false);
   public final ObservableValue<Deque<Notification>>     notifications       = new ObservableValue<>(new ArrayDeque<>());
 
   public final MockProxy mockProxy = MockProxy.fromConfig(Constants.BASE_URL);

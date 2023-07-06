@@ -15,17 +15,26 @@ import ch.fhnw.mitwelten.bricksapp.view.brick.BrickPlacement;
 import ch.fhnw.mitwelten.bricksapp.view.brick.DistancePlacement;
 import ch.fhnw.mitwelten.bricksapp.view.brick.MotorPlacement;
 import javafx.application.Platform;
+import javafx.scene.Group;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ProgressIndicator;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.*;
 
 import java.util.List;
 import java.util.function.Function;
+
+import static javafx.scene.paint.Color.rgb;
 
 public class GardenGUI extends Pane implements ViewMixin<Garden, ApplicationController> {
 
   private final ApplicationController controller;
   private ProgressIndicator spinner;
+  private Group  runButton;
+  private Button updateLoopButton;
+  private Region playIcon;
+  private Region pauseIcon;
+
 
   public GardenGUI(ApplicationController controller) {
     init(controller);
@@ -40,23 +49,53 @@ public class GardenGUI extends Pane implements ViewMixin<Garden, ApplicationCont
   @Override
   public void initializeParts() {
     spinner = new ProgressIndicator();
+
+    playIcon  = new Region();
+    pauseIcon = new Region();
+    playIcon .getStyleClass().add("play");
+    pauseIcon.getStyleClass().add("pause");
+
+    Region background = new Region();
+    background.setMinHeight(25);
+    background.setMinWidth(25);
+    background.relocate(10,10);
+    background.setBackground(
+        new Background(
+            new BackgroundFill(rgb(255,255,255), new CornerRadii(Integer.MAX_VALUE), null)
+        )
+    );
+    updateLoopButton = new Button();
+    updateLoopButton.getStyleClass().add("play-button");
+    updateLoopButton.setGraphic(playIcon);
+    updateLoopButton.setOnAction(e -> controller.toggleUpdateLoop());
+    runButton = new Group(background, updateLoopButton);
   }
 
   @Override
   public void layoutParts() {
-    spinner.relocate(350, 350);
-    this.getChildren().add(spinner);
+    spinner  .relocate(350, 350);
+    runButton.relocate(650, 20);
+    this.getChildren().addAll(spinner, runButton);
   }
 
   @Override
   public void setupModelToUiBindings(Garden model) {
     onChangeOf(model.isLoading).execute((oldValue, newValue) -> {
-      if(newValue) {
+      if (newValue) {
         this.getChildren().add(spinner);
         return;
       }
       this.getChildren().remove(spinner);
     });
+
+    onChangeOf(model.runningUpdateLoop).execute(((oldValue, newValue) -> {
+      System.out.println(newValue);
+      if (newValue){
+        updateLoopButton.setGraphic(pauseIcon);
+      } else {
+        updateLoopButton.setGraphic(playIcon);
+      }
+    }));
 
     onChangeOf(model.notifications).execute((oldValue, newValue) -> {
       if(newValue.isEmpty()) return;

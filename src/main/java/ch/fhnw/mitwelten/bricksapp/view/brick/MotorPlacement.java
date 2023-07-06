@@ -87,9 +87,7 @@ public class MotorPlacement extends BrickPlacement {
     AnchorPane.setBottomAnchor(fnTest, 15.0);
     AnchorPane.setRightAnchor (fnTest, 5.0);
 
-    fnTest.setOnAction(e -> {
-      controller.functionTest(brick, new int[]{ 0, 90, 180, 270, 360, 180, 0 });
-    });
+    fnTest.setOnAction(e -> controller.functionTest(brick, new int[]{ 0, 90, 180, 270, 360, 180, 0 }));
 
     anchorPane.getChildren().addAll(group, fnTest);
     return anchorPane;
