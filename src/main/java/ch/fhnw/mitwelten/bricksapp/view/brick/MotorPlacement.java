@@ -8,26 +8,22 @@ package ch.fhnw.mitwelten.bricksapp.view.brick;
 import ch.fhnw.mitwelten.bricksapp.controller.ApplicationController;
 import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.MotorBrickData;
-import javafx.geometry.Bounds;
-import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.Tooltip;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.transform.Rotate;
 
-import javax.tools.Tool;
-
 
 public class MotorPlacement extends BrickPlacement {
 
   private final MotorBrickData brick;
+  private final ApplicationController controller;
+
   private Group  motorShape;
   private Rotate mostActiveSensorAngle;
   private Rotate frontViewAngle;
@@ -35,6 +31,7 @@ public class MotorPlacement extends BrickPlacement {
   public MotorPlacement(ApplicationController controller, BrickData brick) {
     super(controller, brick, () -> controller.removeBrick(brick));
     this.brick = (MotorBrickData) brick;
+    this.controller = controller;
 
     initializeControls();
     layoutControls();
@@ -91,7 +88,7 @@ public class MotorPlacement extends BrickPlacement {
     AnchorPane.setRightAnchor (fnTest, 5.0);
 
     fnTest.setOnAction(e -> {
-      System.out.println(group.getBoundsInParent().getWidth());
+      controller.functionTest(brick, new int[]{ 0, 90, 180, 270, 360, 180, 0 });
     });
 
     anchorPane.getChildren().addAll(group, fnTest);

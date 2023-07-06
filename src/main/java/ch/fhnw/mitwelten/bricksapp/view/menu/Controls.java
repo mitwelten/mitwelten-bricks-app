@@ -28,7 +28,6 @@ public class Controls extends GridPane {
   private Button addMqttSensor;
   private Button addMqttActuator;
   private Button closeDialog;
-  private Button test;
 
   private TextField sensorId;
   private TextField actuatorId;
@@ -70,7 +69,6 @@ public class Controls extends GridPane {
     add(actuatorId,        1, 11, 1, 1);
     add(separator3,        0, 13, 2, 1);
     add(closeDialog,       0, 17, 1, 1);
-    add(test,              0, 18, 1, 1);
   }
 
   private void initializeControls(Runnable closeCallback) {
@@ -89,7 +87,6 @@ public class Controls extends GridPane {
     addMqttSensor     = new Button("+ Mqtt Sensor");
     addMqttActuator   = new Button("+ Mqtt Actuator");
     closeDialog       = new Button("Close");
-    test              = new Button("Test");
 
     sensorId          = new TextField("sensor ID");
 //    actuatorId        = new TextField("actor ID");
@@ -108,13 +105,11 @@ public class Controls extends GridPane {
     mqttUrl          .setPrefWidth(DEFAULT_NODE_WIDTH);
     actuatorId       .setPrefWidth(DEFAULT_NODE_WIDTH);
     sensorId         .setPrefWidth(DEFAULT_NODE_WIDTH);
-    test             .setPrefWidth(DEFAULT_NODE_WIDTH);
 
     addActuatorButton.setOnAction(e -> controller.createMockActuator());
     addSensorButton  .setOnAction(e -> controller.createMockSensor());
     addMqttActuator  .setOnAction(e -> controller.createMqttActuator(actuatorId.getText()));
     addMqttSensor    .setOnAction(e -> controller.createMqttSensor  (sensorId  .getText()));
     closeDialog      .setOnAction(e -> closeCallback.run());
-    test             .setOnAction(e -> controller.test());
   }
 }

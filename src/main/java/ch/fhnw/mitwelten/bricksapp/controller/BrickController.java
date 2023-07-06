@@ -7,6 +7,8 @@ package ch.fhnw.mitwelten.bricksapp.controller;
 
 import ch.fhnw.imvs.bricks.core.ProxyGroup;
 import ch.fhnw.mitwelten.bricksapp.model.Garden;
+import ch.fhnw.mitwelten.bricksapp.model.Notification.Notification;
+import ch.fhnw.mitwelten.bricksapp.model.Notification.NotificationType;
 import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.DistanceBrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.MotorBrickData;
@@ -21,7 +23,7 @@ public class BrickController extends ControllerBase<Garden> {
   private final ProxyGroup proxyGroup;
   private DistanceBrickData mostActive;
   private final Runnable updateLoopThread;
-  private boolean stopUpdateLoop = false;
+  private boolean isUpdateLoopRunning = false;
 
   public BrickController(Garden model) {
     super(model);
@@ -38,7 +40,7 @@ public class BrickController extends ControllerBase<Garden> {
     final Runnable updateLoopThread;
 
     updateLoopThread = (() -> {
-      while(!stopUpdateLoop) {
+      while(isUpdateLoopRunning) {
 
         // update all sensor values
         model.sensors.getValue().forEach(brick ->
@@ -66,10 +68,11 @@ public class BrickController extends ControllerBase<Garden> {
 
   private void addBrickListsListener() {
     model.sensors.onChange((old, newList)-> {
-      if(old.isEmpty() && !newList.isEmpty()){
-        startUpdateLoop();
-      } else if(!old.isEmpty() && newList.isEmpty()){
-        stopUpdateLoop();
+      if (
+           (old.isEmpty() && !newList.isEmpty()) // change from empty sensor list to at least one sensor
+        || (!old.isEmpty() &&  newList.isEmpty()) // stop loop since sensor list is empty
+      ){
+        toggleUpdateLoop();
       }
     });
   }
@@ -80,15 +83,6 @@ public class BrickController extends ControllerBase<Garden> {
                     set(motor.viewPortAngle,   180 + motor.getPosition() - motor.faceAngle.getValue())
         )
     );
-  }
-
-  private void startUpdateLoop() {
-    stopUpdateLoop = false;
-    new Thread(updateLoopThread).start();
-  }
-
-  private void stopUpdateLoop() {
-    stopUpdateLoop = true;
   }
 
   private DistanceBrickData updateMostActiveSensor(List<DistanceBrickData> bricks){
@@ -150,11 +144,64 @@ public class BrickController extends ControllerBase<Garden> {
     updateModel(set(model.actuators, modified));
   }
 
-  public void test() {
-    if(stopUpdateLoop){
-      startUpdateLoop();
-    }else {
-      stopUpdateLoop();
+  private void toggleUpdateLoop(){
+    if (!isUpdateLoopRunning){
+      isUpdateLoopRunning = true;
+      new Thread(updateLoopThread).start();
+    } else {
+      isUpdateLoopRunning = false;
     }
+  }
+
+  private void createNotification(NotificationType type, String title, String message) {
+    Notification newNotification = new Notification(type, title, message);
+    Deque<Notification> queue    = new ArrayDeque<>(model.notifications.getValue());
+    queue.push(newNotification);
+    updateModel(set(
+        model.notifications,
+        queue
+    ));
+  }
+
+  public void functionTest(MotorBrickData brick, int[] positions) {
+    new Thread( () -> {
+
+      boolean prevUpdateLoopState = isUpdateLoopRunning;
+      if(isUpdateLoopRunning) {
+        toggleUpdateLoop();
+      }
+
+      long startTime = System.currentTimeMillis();
+      boolean testFailed = true;
+
+      for (int pos : positions) {
+        brick.setPosition(pos);
+
+        while(brick.getPosition() != pos) {
+          proxyGroup.waitForUpdate();
+          updateActuatorVisualization();
+          try {
+            Thread.sleep(500);
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        long duration = System.currentTimeMillis() - startTime ;
+        if(duration > 10_000){
+          break;
+        }
+        testFailed = false;
+      }
+
+      if(!testFailed){
+        long duration = System.currentTimeMillis() - startTime ;
+        createNotification(NotificationType.CONFIRMATION, "Function Test", "Test successful - took " + duration + "ms");
+      }
+
+      if(prevUpdateLoopState){
+        toggleUpdateLoop();
+      }
+    }).start();
   }
 }
