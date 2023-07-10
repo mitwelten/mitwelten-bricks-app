@@ -6,6 +6,7 @@
 package ch.fhnw.mitwelten.bricksapp.model.brick;
 
 import ch.fhnw.imvs.bricks.sensors.DistanceBrick;
+import ch.fhnw.mitwelten.bricksapp.util.Location;
 import ch.fhnw.mitwelten.bricksapp.util.mvcbase.ObservableValue;
 
 public class DistanceBrickData extends BrickData {
@@ -21,8 +22,8 @@ public class DistanceBrickData extends BrickData {
         this.inner   = inner;
     }
 
-  public DistanceBrickData(DistanceBrick inner, double lat, double lon, double faceAngle) {
-    super(inner, lat, lon, faceAngle);
+  public DistanceBrickData(DistanceBrick inner, Location location, double faceAngle) {
+    super(inner, location, faceAngle);
     value        = new ObservableValue<>(0);
     isMostActive = new ObservableValue<>(false);
     this.inner   = inner;

@@ -6,6 +6,9 @@
 package ch.fhnw.mitwelten.bricksapp.view.brick;
 
 import javafx.scene.Group;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
@@ -26,6 +29,7 @@ public class BrickNode extends Group {
 
   private Line      frontIndicator;
   private Rectangle body;
+  private Region    brickArea;
 
   public BrickNode(Color color){
     this.color = color;
@@ -38,10 +42,16 @@ public class BrickNode extends Group {
   }
 
   private void layoutControls() {
-    this.getChildren().addAll(frontIndicator ,body);
+    this.getChildren().addAll(brickArea, frontIndicator ,body);
   }
 
   private void initializeControls() {
+    brickArea      = new Region();
+    BackgroundFill bgFill = new BackgroundFill(Color.TRANSPARENT, null, null);
+    brickArea.setMinWidth (BrickNode.SYMBOL_WIDTH);
+    brickArea.setMinHeight(BrickNode.SYMBOL_HEIGHT);
+    brickArea.setBackground(new Background(bgFill));
+
     frontIndicator = new Line(
         CENTER_X,
         CENTER_Y,

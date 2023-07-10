@@ -130,7 +130,6 @@ public class MenuController extends ControllerBase<Garden> {
         .forEach(this::createBrick);
   }
 
-
   private void createBrick(String[] line) {
     // line content:  0: mock, 1: brick, 2: id, 3: lat, 4: long, 5: faceAngle
     boolean isMock   = Boolean.parseBoolean(line[0]);
@@ -185,9 +184,9 @@ public class MenuController extends ControllerBase<Garden> {
     if (isSimulated)  id = createMockId();
     Brick brick = userData.connect(isSimulated ? model.mockProxy : model.mqttProxy, id);
     switch (userData) {
-      case PAX       -> addPaxSensor (new PaxBrickData((PaxBrick)           brick, lat, lon, faceAngle));
-      case STEPPER   -> addActuator  (new MotorBrickData((StepperBrick)     brick, lat, lon, faceAngle));
-      case DISTANCE  -> addDistSensor(new DistanceBrickData((DistanceBrick) brick, lat, lon, faceAngle));
+      case PAX       -> addPaxSensor (new PaxBrickData((PaxBrick)           brick, new Location(lat, lon), faceAngle));
+      case STEPPER   -> addActuator  (new MotorBrickData((StepperBrick)     brick, new Location(lat, lon), faceAngle));
+      case DISTANCE  -> addDistSensor(new DistanceBrickData((DistanceBrick) brick, new Location(lat, lon), faceAngle));
     }
   }
 }

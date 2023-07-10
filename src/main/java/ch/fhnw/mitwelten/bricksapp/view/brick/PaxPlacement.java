@@ -8,10 +8,12 @@ package ch.fhnw.mitwelten.bricksapp.view.brick;
 import ch.fhnw.mitwelten.bricksapp.controller.ApplicationController;
 import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.PaxBrickData;
+import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.control.Label;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
@@ -20,10 +22,11 @@ import javafx.scene.text.FontWeight;
 
 public class PaxPlacement extends BrickPlacement {
 
-  private PaxBrickData brick;
-  private Label valueLabel;
+  private final PaxBrickData brick;
+  private Label     valueLabel;
+  private HBox      labelContainer;
   private BrickNode brickIcon;
-  private Group paxNode;
+  private Group     paxNode;
 
   public PaxPlacement(ApplicationController controller, BrickData brick) {
     super(controller, brick, () -> controller.removeBrick(brick));
@@ -33,20 +36,17 @@ public class PaxPlacement extends BrickPlacement {
   }
 
   private void initializeControls() {
-    BackgroundFill bgFill = new BackgroundFill(Color.TRANSPARENT, null, null);
-    Region brickArea = new Region();
-    brickArea.setMinWidth (BrickNode.SYMBOL_WIDTH);
-    brickArea.setMinHeight(BrickNode.SYMBOL_HEIGHT);
-    brickArea.setBackground(new Background(bgFill));
-
-    brickIcon  = new BrickNode(Color.YELLOW);
-    valueLabel = new Label("0");
-    valueLabel.setFont(Font.font("Tahoma", FontWeight.NORMAL, 15));
-    paxNode    = new Group(brickArea, brickIcon, valueLabel);
+    brickIcon      = new BrickNode(Color.YELLOW);
+    valueLabel     = new Label("100");
+    labelContainer = new HBox(valueLabel);
+    paxNode        = new Group(brickIcon, labelContainer);
+    valueLabel.setFont(Font.font("Tahoma", FontWeight.BOLD, 12));
   }
 
   private void layoutControls() {
-    valueLabel.relocate(BrickNode.WIDTH_BRICK / 2, BrickNode.HEIGHT_BRICK / 2);
+    labelContainer.setMinWidth(BrickNode.SYMBOL_WIDTH);
+    labelContainer.setMinHeight(BrickNode.SYMBOL_HEIGHT);
+    labelContainer.setAlignment(Pos.CENTER);
     super.getChildren().add(paxNode);
   }
 

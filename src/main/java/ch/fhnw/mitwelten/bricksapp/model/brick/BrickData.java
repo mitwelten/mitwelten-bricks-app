@@ -26,8 +26,8 @@ public abstract class BrickData {
     this.inner = inner;
   }
 
-  public BrickData(Brick inner, double x, double y, double faceAngle){
-    this.location   = new ObservableValue<>(new Location(x, y));
+  public BrickData(Brick inner, Location location, double faceAngle){
+    this.location   = new ObservableValue<>(location);
     this.faceAngle  = new ObservableValue<>(faceAngle);
     this.inner = inner;
   }
@@ -49,8 +49,10 @@ public abstract class BrickData {
   }
 
   public String toStringFormatted() {
+    String id = inner.getID();
+    if (id.length() > 12) id = "..." + id.substring(id.length() - 12);
     Location coordinates = Util.toCoordinates(location.getValue().lon(), location.getValue().lat());
-    return inner.getID() +
+    return id +
 //        "\nx: "   + brick.location.getValue().lon() +
 //        "\ny: "   + brick.location.getValue().lat() +
         "\nx:\t"   + coordinates.lat() +

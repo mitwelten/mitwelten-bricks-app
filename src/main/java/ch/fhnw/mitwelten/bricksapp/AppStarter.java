@@ -127,7 +127,7 @@ public class AppStarter extends Application {
     // LAT_MG=6371000*LN(TAN(LAT_WGS84+90)/360*PI())
     // LON_MG=LON_WGS84*6371000*PI()/180
 
-    List<Image> filesInFolder = Files.walk(Paths.get(Constants.CSV_PATH + "/img/v2"))
+    List<Image> filesInFolder = Files.walk(Paths.get(Constants.CSV_PATH + "img/v2"))
         .filter(Files::isRegularFile)
         .map(Path::toFile)
         .sorted()

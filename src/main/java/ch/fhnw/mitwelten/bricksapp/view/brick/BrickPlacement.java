@@ -25,15 +25,14 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class BrickPlacement extends Group {
 
-  protected double faceAngle;
-
   protected Group cross;
-
-  private Text label;
-  private Pane labelGroup;
+  private Text    label;
+  private Pane    labelGroup;
 
   private final ApplicationController controller;
   private final BrickData             brickData;
+
+  protected double faceAngle;
 
   public BrickPlacement(ApplicationController controller, BrickData brick, Runnable removeMe) {
     super();

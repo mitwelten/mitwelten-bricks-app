@@ -54,14 +54,8 @@ public class MotorPlacement extends BrickPlacement {
     outerCircle.setStroke(Color.BLACK);
 
     BrickNode brickIcon   = new BrickNode(Color.BLUE);
-    Region brickArea      = new Region();
-    BackgroundFill bgFill = new BackgroundFill(Color.TRANSPARENT, null, null);
-    brickArea.setMinWidth (BrickNode.SYMBOL_WIDTH);
-    brickArea.setMinHeight(BrickNode.SYMBOL_HEIGHT);
-    brickArea.setBackground(new Background(bgFill));
 
     motorShape = new Group(
-        brickArea,
         brickIcon,
         outerCircle,
         mostActiveSensorIndicator,

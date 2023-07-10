@@ -6,6 +6,7 @@
 package ch.fhnw.mitwelten.bricksapp.model.brick;
 
 import ch.fhnw.imvs.bricks.actuators.StepperBrick;
+import ch.fhnw.mitwelten.bricksapp.util.Location;
 import ch.fhnw.mitwelten.bricksapp.util.mvcbase.ObservableValue;
 
 public class MotorBrickData extends BrickData {
@@ -22,8 +23,8 @@ public class MotorBrickData extends BrickData {
         viewPortAngle   = new ObservableValue<>(0d);
     }
 
-  public MotorBrickData(StepperBrick inner, double lat, double lon, double faceAngle) {
-    super(inner, lat, lon, faceAngle);
+  public MotorBrickData(StepperBrick inner, Location location,  double faceAngle) {
+    super(inner, location, faceAngle);
     this.inner = inner;
     mostActiveAngle = new ObservableValue<>(0d);
     viewPortAngle   = new ObservableValue<>(0d);

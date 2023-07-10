@@ -26,19 +26,16 @@ public class MenuControls extends BorderPane {
 
   private static final int DEFAULT_NODE_WIDTH = 125;
 
-  private Text title;
-
-  private Label lblSimulated;
-  private CheckBox isSimulated;
-
+  private Text  title;
   private Label lblId;
+  private Label lblSimulated;
 
+  private CheckBox    isSimulated;
   private ToggleGroup brickTypeGroup;
+  private ComboBox<String> comboBox;
 
   private Button addBrickBtn;
   private Button closeDialogBtn;
-
-  private ComboBox<String> comboBox;
 
   private final ApplicationController controller;
 

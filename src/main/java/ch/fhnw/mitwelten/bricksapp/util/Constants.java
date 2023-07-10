@@ -20,8 +20,8 @@ public class Constants {
 
   public static final String BASE_URL = "brick.li/";
 
-  public static final String CSV_PATH    = "src/main/resources";
-  public static final String PAX_ID_PATH = "src/main/resources/";
+  public static final String CSV_PATH    = "src/main/resources/";
+  public static final String PAX_ID_PATH = "src/main/resources/id/";
 
   public static final String MOCK_ID_PREFIX   = "(mock): ";
   public static final String MQTT_ID_PREFIX   = "(mqtt): ";
