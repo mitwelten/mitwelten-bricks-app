@@ -65,6 +65,7 @@ public class AppStarter extends Application {
     addKeyListener(scene);
 
     primaryStage.setScene(scene);
+    controller.toggleUpdateLoop();
   }
 
   private void addKeyListener(Scene scene) {

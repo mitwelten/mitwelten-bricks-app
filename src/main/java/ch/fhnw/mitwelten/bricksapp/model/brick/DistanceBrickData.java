@@ -21,7 +21,14 @@ public class DistanceBrickData extends BrickData {
         this.inner   = inner;
     }
 
-    public int getDistance() {
+  public DistanceBrickData(DistanceBrick inner, double lat, double lon, double faceAngle) {
+    super(inner, lat, lon, faceAngle);
+    value        = new ObservableValue<>(0);
+    isMostActive = new ObservableValue<>(false);
+    this.inner   = inner;
+  }
+
+  public int getDistance() {
         return inner.getDistance();
     }
 

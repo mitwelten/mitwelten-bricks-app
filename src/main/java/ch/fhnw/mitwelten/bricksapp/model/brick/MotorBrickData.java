@@ -22,7 +22,14 @@ public class MotorBrickData extends BrickData {
         viewPortAngle   = new ObservableValue<>(0d);
     }
 
-    public int getPosition(){
+  public MotorBrickData(StepperBrick inner, double lat, double lon, double faceAngle) {
+    super(inner, lat, lon, faceAngle);
+    this.inner = inner;
+    mostActiveAngle = new ObservableValue<>(0d);
+    viewPortAngle   = new ObservableValue<>(0d);
+  }
+
+  public int getPosition(){
         return inner.getPosition();
     }
 
@@ -48,6 +55,6 @@ public class MotorBrickData extends BrickData {
 
     @Override
     public String toString() {
-        return "ServoBrick" + "," + super.toString();
+        return "Stepper" + "," + super.toString();
     }
 }

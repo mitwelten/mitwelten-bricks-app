@@ -10,7 +10,11 @@ import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.PaxBrickData;
 import javafx.scene.Group;
 import javafx.scene.control.Label;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
@@ -29,11 +33,16 @@ public class PaxPlacement extends BrickPlacement {
   }
 
   private void initializeControls() {
+    BackgroundFill bgFill = new BackgroundFill(Color.TRANSPARENT, null, null);
+    Region brickArea = new Region();
+    brickArea.setMinWidth (BrickNode.SYMBOL_WIDTH);
+    brickArea.setMinHeight(BrickNode.SYMBOL_HEIGHT);
+    brickArea.setBackground(new Background(bgFill));
+
     brickIcon  = new BrickNode(Color.YELLOW);
     valueLabel = new Label("0");
     valueLabel.setFont(Font.font("Tahoma", FontWeight.NORMAL, 15));
-
-    paxNode    = new Group(brickIcon, valueLabel);
+    paxNode    = new Group(brickArea, brickIcon, valueLabel);
   }
 
   private void layoutControls() {

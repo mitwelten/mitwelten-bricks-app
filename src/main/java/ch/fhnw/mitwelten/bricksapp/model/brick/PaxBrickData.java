@@ -21,6 +21,13 @@ public class PaxBrickData extends BrickData {
         this.inner   = inner;
     }
 
+    public PaxBrickData(PaxBrick inner, double lat, double lon, double faceAngle) {
+        super(inner, lat, lon, faceAngle);
+        value        = new ObservableValue<>(0);
+        isMostActive = new ObservableValue<>(false);
+        this.inner   = inner;
+    }
+
     public int getValue() {
         return inner.getValue();
     }

@@ -7,8 +7,8 @@ package ch.fhnw.mitwelten.bricksapp.controller;
 
 import ch.fhnw.mitwelten.bricksapp.model.Garden;
 import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.DistanceBrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.MotorBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.BrickType;
 import ch.fhnw.mitwelten.bricksapp.util.Location;
 import ch.fhnw.mitwelten.bricksapp.util.mvcbase.ControllerBase;
 
@@ -56,25 +56,6 @@ public class ApplicationController extends ControllerBase<Garden> {
   }
 
   // Menu Controller delegation
-  public MotorBrickData createMockActuator() {
-    return menuController.createMockActuator();
-  }
-
-  public DistanceBrickData createMockSensor() {
-    return menuController.createMockSensor();
-  }
-
-  public void createMqttSensor(String id) {
-    menuController.createMqttSensor(id);
-  }
-
-  public void createMqttActuator(String id) {
-    menuController.createMqttActuator(id);
-  }
-
-  public void createPaxSensor(String id) {
-    menuController.createPaxSensor(id);
-  }
 
   public void printAllBrickData() {
     menuController.printAllBrickData();
@@ -94,5 +75,13 @@ public class ApplicationController extends ControllerBase<Garden> {
 
   public void toggleUpdateLoop() {
     brickController.toggleUpdateLoop();
+  }
+
+  public void addBrick(boolean selected, BrickType userData, String id) {
+    menuController.addBrick(selected, userData, id, 0, 0, 0);
+  }
+
+  public boolean isIdAssigned(String id) {
+    return menuController.isIdAssigned(id);
   }
 }

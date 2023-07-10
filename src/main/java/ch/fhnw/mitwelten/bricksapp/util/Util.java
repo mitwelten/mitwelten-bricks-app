@@ -94,6 +94,17 @@ public class Util {
     return new Location(roundedLat, roundedLon);
   }
 
+//  public static Location fromLocation(Location location) {
+//    double lon = (LEFT_LONG + ((RIGHT_LONG - LEFT_LONG) / WINDOW_WIDTH) * x);
+//    double lat = (BOTTOM_LAT + ((TOP_LAT - BOTTOM_LAT) / WINDOW_HEIGHT) * y);
+//
+//    double decimalFactor = 10e4;
+//    double roundedLat = Math.round(lat * decimalFactor) / decimalFactor;
+//    double roundedLon = Math.round(lon * decimalFactor) / decimalFactor;
+//
+//    return new Location(roundedLat, roundedLon);
+//  }
+
   public static String getTimeStamp() {
     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
     LocalDateTime now = LocalDateTime.now();

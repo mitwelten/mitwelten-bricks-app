@@ -21,8 +21,14 @@ public abstract class BrickData {
   private final Brick inner;
 
   public BrickData(Brick inner){
-    location   = new ObservableValue<>(new Location(Constants.SPAWN_POSITION_X, Constants.SPAWN_POSITION_Y));
-    faceAngle  = new ObservableValue<>(0.0);
+    this.location   = new ObservableValue<>(new Location(Constants.SPAWN_POSITION_X, Constants.SPAWN_POSITION_Y));
+    this.faceAngle  = new ObservableValue<>(0.0);
+    this.inner = inner;
+  }
+
+  public BrickData(Brick inner, double x, double y, double faceAngle){
+    this.location   = new ObservableValue<>(new Location(x, y));
+    this.faceAngle  = new ObservableValue<>(faceAngle);
     this.inner = inner;
   }
 

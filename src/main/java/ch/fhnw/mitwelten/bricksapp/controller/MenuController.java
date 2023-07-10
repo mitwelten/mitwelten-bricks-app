@@ -6,8 +6,10 @@
 package ch.fhnw.mitwelten.bricksapp.controller;
 
 import ch.fhnw.imvs.bricks.actuators.StepperBrick;
+import ch.fhnw.imvs.bricks.core.Brick;
 import ch.fhnw.imvs.bricks.sensors.DistanceBrick;
 import ch.fhnw.imvs.bricks.sensors.PaxBrick;
+import ch.fhnw.mitwelten.bricksapp.model.BrickType;
 import ch.fhnw.mitwelten.bricksapp.model.Garden;
 import ch.fhnw.mitwelten.bricksapp.model.Notification.Notification;
 import ch.fhnw.mitwelten.bricksapp.model.Notification.NotificationType;
@@ -39,67 +41,38 @@ public class MenuController extends ControllerBase<Garden> {
     mqttIds = new HashSet<>();
   }
 
-  public MotorBrickData createMockActuator(){
-    String id = createMockId();
-    MotorBrickData newBrick = new MotorBrickData(StepperBrick.connect(model.mockProxy, id));
-    addActuator(newBrick);
-    return newBrick;
-  }
-
-  public DistanceBrickData createMockSensor(){
-    String id = createMockId();
-    DistanceBrickData newBrick = new DistanceBrickData(DistanceBrick.connect(model.mockProxy, id));
-    addDistSensor(newBrick);
-    return newBrick;
-  }
-
-  public Optional<DistanceBrickData> createMqttSensor(String id){
-    if(isMqttIdAssigned(id)) return Optional.empty();
-    DistanceBrickData newBrick = new DistanceBrickData(DistanceBrick.connect(model.mqttProxy, id));
-    addDistSensor(newBrick);
-    return Optional.of(newBrick);
-  }
-
-  public Optional<MotorBrickData> createMqttActuator(String id){
-    if(isMqttIdAssigned(id)) return Optional.empty();
-    MotorBrickData newBrick = new MotorBrickData(StepperBrick.connect(model.mqttProxy, id));
-    addActuator(newBrick);
-    return Optional.of(newBrick);
-  }
-
-  public Optional<PaxBrickData> createPaxSensor(String id) {
-    if(isMqttIdAssigned(id)) return Optional.empty();
-    PaxBrickData newBrick = new PaxBrickData(PaxBrick.connect(model.mqttProxy, id));
-    addPaxSensor(newBrick);
-    return Optional.of(newBrick);
-  }
-
   private void addPaxSensor(PaxBrickData brick) {
     var list = new ArrayList<>(model.paxSensors.getValue());
+    Location spawnLocation = brick.location.getValue();
+    if(spawnLocation.lat() == 0 && spawnLocation.lon() == 0) spawnLocation = calcSpawnPosition();
     list.add(brick);
     updateModel(
         set(model.paxSensors, list),
-        set(brick.location, calcSpawnPosition())
+        set(brick.location, spawnLocation)
     );
     this.awaitCompletion();
   }
 
   private void addDistSensor(DistanceBrickData brick) {
     var list = new ArrayList<>(model.distSensors.getValue());
+    Location spawnLocation = brick.location.getValue();
+    if(spawnLocation.lat() == 0 && spawnLocation.lon() == 0) spawnLocation = calcSpawnPosition();
     list.add(brick);
     updateModel(
         set(model.distSensors, list),
-        set(brick.location, calcSpawnPosition())
+        set(brick.location, spawnLocation)
     );
     this.awaitCompletion();
   }
 
   private void addActuator(MotorBrickData brick) {
     var list = new ArrayList<>(model.stepperActuators.getValue());
+    Location spawnLocation = brick.location.getValue();
+    if(spawnLocation.lat() == 0 && spawnLocation.lon() == 0) spawnLocation = calcSpawnPosition();
     list.add(brick);
     updateModel(
         set(model.stepperActuators, list),
-        set(brick.location, calcSpawnPosition())
+        set(brick.location, spawnLocation)
     );
     this.awaitCompletion();
   }
@@ -154,18 +127,25 @@ public class MenuController extends ControllerBase<Garden> {
     lines.stream()
         .skip(1) // header
         .map(line -> line.split(","))
-        .forEach(this::createBrickFromStringLine);
+        .forEach(this::createBrick);
   }
 
-  private void createBrickFromStringLine(String[] line) {
-    Optional<? extends BrickData> brick = createBrick(line);
-    this.awaitCompletion();
-    brick.ifPresentOrElse(
-        newBrick ->
-            updateModel(
-                set(newBrick.location,  new Location(Double.parseDouble(line[3]), Double.parseDouble(line[4]))),
-                set(newBrick.faceAngle, Double.parseDouble(line[5]))
-            ),
+
+  private void createBrick(String[] line) {
+    // line content:  0: mock, 1: brick, 2: id, 3: lat, 4: long, 5: faceAngle
+    boolean isMock   = Boolean.parseBoolean(line[0]);
+    double lat       = Double.parseDouble  (line[3]);
+    double lon       = Double.parseDouble  (line[4]);
+    double faceAngle = Double.parseDouble  (line[5]);
+    System.out.println("lat: " + lat);
+    System.out.println("lon: " + lon);
+
+    Optional<BrickType> brickType = Arrays.stream(BrickType.values())
+        .filter(bt -> line[1].contains(bt.toString()))
+        .findAny();
+
+    brickType.ifPresentOrElse(
+        bt -> addBrick(isMock, bt, line[2], lat, lon, faceAngle),
         () -> createNotification(
             NotificationType.ERROR,
             "Create Brick from Config",
@@ -174,29 +154,11 @@ public class MenuController extends ControllerBase<Garden> {
     );
   }
 
-  private Optional<? extends BrickData> createBrick(String[] line) {
-    // line content:  1: mock, 2: brick, 3: id, 4: lat, 5: long, 6: faceAngle
-    Optional<? extends BrickData> brick = Optional.empty();
-    boolean isMock = Boolean.parseBoolean(line[0]);
-    boolean isSensor   = line[1].contains(DistanceBrick.class.getSimpleName());
-    boolean isActuator = line[1].contains(StepperBrick .class.getSimpleName());
-
-    if(isMock){
-      if(isSensor)   brick = Optional.of(createMockSensor());
-      if(isActuator) brick = Optional.of(createMockActuator());
-    } else {
-      String id = line[2];
-      if(isSensor)   brick = createMqttSensor(id);
-      if(isActuator) brick = createMqttActuator(id);
-    }
-    return brick;
-  }
-
   private String createMockId() {
     return Constants.MOCK_ID_PREFIX + mockIdCounter++;
   }
 
-  private boolean isMqttIdAssigned(String id){
+  public boolean isIdAssigned(String id){
     if(!mqttIds.add(id)) {
       createNotification(
           NotificationType.ERROR,
@@ -219,4 +181,13 @@ public class MenuController extends ControllerBase<Garden> {
     return new Location(x + offset, y + offset);
   }
 
+  public void addBrick(boolean isSimulated, BrickType userData, String id, double lat, double lon, double faceAngle) {
+    if (isSimulated)  id = createMockId();
+    Brick brick = userData.connect(isSimulated ? model.mockProxy : model.mqttProxy, id);
+    switch (userData) {
+      case PAX       -> addPaxSensor (new PaxBrickData((PaxBrick)           brick, lat, lon, faceAngle));
+      case STEPPER   -> addActuator  (new MotorBrickData((StepperBrick)     brick, lat, lon, faceAngle));
+      case DISTANCE  -> addDistSensor(new DistanceBrickData((DistanceBrick) brick, lat, lon, faceAngle));
+    }
+  }
 }
