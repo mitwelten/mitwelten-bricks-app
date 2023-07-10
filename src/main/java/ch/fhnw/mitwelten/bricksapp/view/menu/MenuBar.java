@@ -38,7 +38,7 @@ public class MenuBar extends javafx.scene.control.MenuBar {
   private void initializeListeners(Stage stage, Runnable shutdownCallback) {
     addBrick.setOnAction(_e -> {
       Stage dialog     = new Stage();
-      Scene popUpScene = new Scene(new MenuControls(controller, dialog::close), 350, 450);
+      Scene popUpScene = new Scene(new MenuControls(controller, dialog::close), 300, 350);
       dialog.setScene(popUpScene);
       dialog.initOwner(stage);
       dialog.showAndWait();

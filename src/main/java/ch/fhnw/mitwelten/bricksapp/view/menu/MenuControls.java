@@ -26,16 +26,14 @@ public class MenuControls extends BorderPane {
 
   private static final int DEFAULT_NODE_WIDTH = 125;
 
-  private Text  title;
-  private Label lblId;
-  private Label lblSimulated;
-
-  private CheckBox    isSimulated;
-  private ToggleGroup brickTypeGroup;
+  private Text             title;
+  private Label            lblId;
+  private Label            lblSimulated;
+  private CheckBox         isSimulated;
+  private Button           addBrickBtn;
+  private Button           closeDialogBtn;
+  private ToggleGroup      brickTypeGroup;
   private ComboBox<String> comboBox;
-
-  private Button addBrickBtn;
-  private Button closeDialogBtn;
 
   private final ApplicationController controller;
 
@@ -74,9 +72,10 @@ public class MenuControls extends BorderPane {
       rb.setUserData(el);
       return rb;
     }).toList();
+
     rbs.get(0).setSelected(true);
 
-    VBox controls = new VBox();
+    VBox controls = new VBox(10.0);
     controls.getChildren().addAll(
         new HBox(20.0, lblSimulated, isSimulated),
         new Separator()
@@ -86,8 +85,6 @@ public class MenuControls extends BorderPane {
         new Separator(),
         new HBox(20.0, lblId, comboBox)
     );
-
-    controls.setSpacing(10.0);
 
     setPadding(new Insets(25, 25, 25, 25));
     setTop(title);
@@ -111,6 +108,7 @@ public class MenuControls extends BorderPane {
     comboBox       = new ComboBox<>();
 
     comboBox.getItems().addAll(ids.get(BrickType.DISTANCE));
+    comboBox.setValue(comboBox.getItems().get(0));
     comboBox.setEditable(true);
     comboBox.getValue();
 
@@ -120,6 +118,7 @@ public class MenuControls extends BorderPane {
     brickTypeGroup.selectedToggleProperty().addListener((_1, _2, newValue) -> {
       comboBox.getItems().clear();
       comboBox.getItems().addAll(ids.get((BrickType) newValue.getUserData()));
+      comboBox.setValue(comboBox.getItems().get(0));
     });
 
     closeDialogBtn.setOnAction(e -> closeCallback.run());

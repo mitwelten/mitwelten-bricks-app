@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 
 import static ch.fhnw.mitwelten.bricksapp.util.ConfigIOHandler.readFromFile;
 import static ch.fhnw.mitwelten.bricksapp.util.ConfigIOHandler.writeToFile;
+import static ch.fhnw.mitwelten.bricksapp.util.Util.calcSpawnPosition;
 
 public class MenuController extends ControllerBase<Garden> {
 
@@ -46,7 +47,7 @@ public class MenuController extends ControllerBase<Garden> {
   private void addSensor(SensorBrickData brick) {
     var list = new ArrayList<>(model.sensors.getValue());
     Location spawnLocation = brick.location.getValue();
-    if(spawnLocation.lat() == 0 && spawnLocation.lon() == 0) spawnLocation = calcSpawnPosition();
+    if(spawnLocation.lat() == 0 && spawnLocation.lon() == 0) spawnLocation = calcSpawnPosition(spiralValue++);
     list.add(brick);
     updateModel(
         set(model.sensors, list),
@@ -58,7 +59,7 @@ public class MenuController extends ControllerBase<Garden> {
   private void addActuator(ActuatorBrickData brick) {
     var list = new ArrayList<>(model.actuators.getValue());
     Location spawnLocation = brick.location.getValue();
-    if(spawnLocation.lat() == 0 && spawnLocation.lon() == 0) spawnLocation = calcSpawnPosition();
+    if(spawnLocation.lat() == 0 && spawnLocation.lon() == 0) spawnLocation = calcSpawnPosition(spiralValue++);
     list.add(brick);
     updateModel(
         set(model.actuators, list),
@@ -197,16 +198,6 @@ public class MenuController extends ControllerBase<Garden> {
     return false;
   }
 
-  private Location calcSpawnPosition() {
-    // archimedic spiral formula: x(t) = at cos(t), y(t) = at sin(t)
-    double a = 10;
-    double offset = (double) Constants.WINDOW_HEIGHT / 2;
-    double t = spiralValue;
-    double x = a * t * Math.cos(t);
-    double y = a * t * Math.sin(t);
-    spiralValue += 0.5;
-    return new Location(x + offset, y + offset);
-  }
 
   public void addBrick(boolean isSimulated, BrickType userData, String id, double lat, double lon, double faceAngle) {
     if (isSimulated)  id = createMockId();

@@ -110,4 +110,15 @@ public class Util {
     LocalDateTime now = LocalDateTime.now();
     return dtf.format(now);
   }
+
+
+  public static Location calcSpawnPosition(double spiralValue) {
+    // archimedic spiral formula: x(t) = at cos(t), y(t) = at sin(t)
+    double a = 10;
+    double offset = (double) Constants.WINDOW_HEIGHT / 2;
+    double t = spiralValue;
+    double x = a * t * Math.cos(t);
+    double y = a * t * Math.sin(t);
+    return new Location(x + offset, y + offset);
+  }
 }
