@@ -13,7 +13,7 @@ import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.impl.ActuatorBrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.impl.SensorBrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.sensors.DistanceBrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.actuators.MotorBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.actuators.StepperBrickData;
 import ch.fhnw.mitwelten.bricksapp.util.Constants;
 import ch.fhnw.mitwelten.bricksapp.util.Location;
 import ch.fhnw.mitwelten.bricksapp.util.Util;
@@ -68,8 +68,8 @@ public class ProcessController extends ControllerBase<Garden> {
   }
 
   private void updateActuatorVisualization() {
-    model.actuators.getValue().forEach(motor ->
-        updateModel(set(motor.value, (double) motor.getPosition())));
+    model.actuators.getValue().forEach(actuator ->
+        updateModel(set(actuator.value, (double) actuator.getPosition())));
   }
 
   private DistanceBrickData updateMostActiveSensor(List<SensorBrickData> bricks){
@@ -89,10 +89,10 @@ public class ProcessController extends ControllerBase<Garden> {
   }
 
   private void setTargetPosition(ActuatorBrickData actuator, Location mostActiveLocation) {
-    Location motorLocation = actuator.location.getValue();
+    Location actuatorLocation = actuator.location.getValue();
 
-    double dLat   = mostActiveLocation.lat() - motorLocation.lat();
-    double dLong  = mostActiveLocation.lon() - motorLocation.lon();
+    double dLat   = mostActiveLocation.lat() - actuatorLocation.lat();
+    double dLong  = mostActiveLocation.lon() - actuatorLocation.lon();
     double angle  = Util.calcAngle(dLong, dLat);
     double target = Util.absolutToRelativ(actuator, angle);
 
@@ -131,7 +131,7 @@ public class ProcessController extends ControllerBase<Garden> {
     ));
   }
 
-  public void functionTest(MotorBrickData brick, int[] positions) {
+  public void functionTest(StepperBrickData brick, int[] positions) {
     new Thread( () -> {
 
       boolean prevUpdateLoopState = model.runningUpdateLoop.getValue();

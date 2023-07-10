@@ -7,7 +7,7 @@ package ch.fhnw.mitwelten.bricksapp.controller;
 
 import ch.fhnw.mitwelten.bricksapp.model.Garden;
 import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.actuators.MotorBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.actuators.StepperBrickData;
 import ch.fhnw.mitwelten.bricksapp.model.BrickType;
 import ch.fhnw.mitwelten.bricksapp.util.Location;
 import ch.fhnw.mitwelten.bricksapp.util.mvcbase.ControllerBase;
@@ -69,7 +69,7 @@ public class ApplicationController extends ControllerBase<Garden> {
     menuController.exportToFile(file);
   }
 
-  public void functionTest(MotorBrickData brick, int[] positions) {
+  public void functionTest(StepperBrickData brick, int[] positions) {
     brickController.functionTest(brick, positions);
   }
 
@@ -77,8 +77,8 @@ public class ApplicationController extends ControllerBase<Garden> {
     brickController.toggleUpdateLoop();
   }
 
-  public void addBrick(boolean selected, BrickType userData, String id) {
-    menuController.addBrick(selected, userData, id, 0, 0, 0);
+  public BrickData addBrick(boolean isSimulated, BrickType userData, String id) {
+    return menuController.addBrick(isSimulated, userData, id, 0, 0, 0);
   }
 
   public boolean isIdAssigned(String id) {

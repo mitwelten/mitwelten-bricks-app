@@ -3,12 +3,14 @@
  Licensed under MIT License
  ---------------------------------------------------------------------------------------*/
 
-package ch.fhnw.mitwelten.bricksapp.view.brick;
+package ch.fhnw.mitwelten.bricksapp.view.brick.sensors;
 
 import ch.fhnw.mitwelten.bricksapp.controller.ApplicationController;
 import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.impl.SensorBrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.sensors.PaxBrickData;
+import ch.fhnw.mitwelten.bricksapp.view.brick.BrickNode;
+import ch.fhnw.mitwelten.bricksapp.view.brick.SensorPlacement;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.control.Label;

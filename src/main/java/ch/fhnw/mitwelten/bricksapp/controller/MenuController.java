@@ -17,7 +17,7 @@ import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.impl.ActuatorBrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.impl.SensorBrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.sensors.DistanceBrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.actuators.MotorBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.actuators.StepperBrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.sensors.PaxBrickData;
 import ch.fhnw.mitwelten.bricksapp.util.Constants;
 import ch.fhnw.mitwelten.bricksapp.util.Location;
@@ -44,7 +44,7 @@ public class MenuController extends ControllerBase<Garden> {
     ids = new HashSet<>();
   }
 
-  private void addSensor(SensorBrickData brick) {
+  private SensorBrickData addSensor(SensorBrickData brick) {
     var list = new ArrayList<>(model.sensors.getValue());
     Location spawnLocation = brick.location.getValue();
     if(spawnLocation.lat() == 0 && spawnLocation.lon() == 0) spawnLocation = calcSpawnPosition(spiralValue++);
@@ -54,9 +54,10 @@ public class MenuController extends ControllerBase<Garden> {
         set(brick.location, spawnLocation)
     );
     this.awaitCompletion();
+    return brick;
   }
 
-  private void addActuator(ActuatorBrickData brick) {
+  private ActuatorBrickData addActuator(ActuatorBrickData brick) {
     var list = new ArrayList<>(model.actuators.getValue());
     Location spawnLocation = brick.location.getValue();
     if(spawnLocation.lat() == 0 && spawnLocation.lon() == 0) spawnLocation = calcSpawnPosition(spiralValue++);
@@ -66,6 +67,7 @@ public class MenuController extends ControllerBase<Garden> {
         set(brick.location, spawnLocation)
     );
     this.awaitCompletion();
+    return brick;
   }
 
   public void exportToFile(File file) {
@@ -158,7 +160,7 @@ public class MenuController extends ControllerBase<Garden> {
       );
     }
     if(data instanceof DistanceBrickData) removeBrick((DistanceBrickData) data);
-    if(data instanceof MotorBrickData)    removeBrick((MotorBrickData)    data);
+    if(data instanceof StepperBrickData)    removeBrick((StepperBrickData)    data);
     if(data instanceof PaxBrickData)      removeBrick((PaxBrickData)      data);
   }
 
@@ -199,13 +201,15 @@ public class MenuController extends ControllerBase<Garden> {
   }
 
 
-  public void addBrick(boolean isSimulated, BrickType userData, String id, double lat, double lon, double faceAngle) {
+  public BrickData addBrick(boolean isSimulated, BrickType userData, String id, double lat, double lon, double faceAngle) {
     if (isSimulated)  id = createMockId();
     Brick brick = userData.connect(isSimulated ? model.mockProxy : model.mqttProxy, id);
+    BrickData brickData = null;
     switch (userData) {
-      case STEPPER   -> addActuator (new MotorBrickData((StepperBrick)     brick, new Location(lat, lon), faceAngle));
-      case PAX       -> addSensor   (new PaxBrickData((PaxBrick)           brick, new Location(lat, lon), faceAngle));
-      case DISTANCE  -> addSensor   (new DistanceBrickData((DistanceBrick) brick, new Location(lat, lon), faceAngle));
+      case STEPPER   -> brickData = addActuator(new StepperBrickData((StepperBrick)   brick, new Location(lat, lon), faceAngle));
+      case PAX       -> brickData = addSensor  (new PaxBrickData((PaxBrick)           brick, new Location(lat, lon), faceAngle));
+      case DISTANCE  -> brickData = addSensor  (new DistanceBrickData((DistanceBrick) brick, new Location(lat, lon), faceAngle));
     }
+    return brickData;
   }
 }

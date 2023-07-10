@@ -9,11 +9,15 @@ import ch.fhnw.mitwelten.bricksapp.controller.ApplicationController;
 import ch.fhnw.mitwelten.bricksapp.model.Garden;
 import ch.fhnw.mitwelten.bricksapp.model.Notification.Notification;
 import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.impl.ActuatorBrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.impl.SensorBrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.sensors.DistanceBrickData;
 import ch.fhnw.mitwelten.bricksapp.util.Constants;
 import ch.fhnw.mitwelten.bricksapp.util.mvcbase.ViewMixin;
 import ch.fhnw.mitwelten.bricksapp.view.brick.*;
+import ch.fhnw.mitwelten.bricksapp.view.brick.actuators.StepperPlacement;
+import ch.fhnw.mitwelten.bricksapp.view.brick.sensors.DistancePlacement;
+import ch.fhnw.mitwelten.bricksapp.view.brick.sensors.PaxPlacement;
 import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.control.Alert;
@@ -116,11 +120,11 @@ public class GardenGUI extends Pane implements ViewMixin<Garden, ApplicationCont
             removePlacement(oldValue, newValue);
           } else {
             if (newValue.isEmpty()) return;
-            MotorPlacement mp = addPlacement(
+            ActuatorPlacement mp = addPlacement(
                 model,
                 oldValue,
                 newValue,
-                (brick) -> new MotorPlacement(controller, brick)
+                (brick) -> new StepperPlacement(controller, (ActuatorBrickData) brick)
             );
             addActuatorListeners(mp);
           }
@@ -212,9 +216,9 @@ public class GardenGUI extends Pane implements ViewMixin<Garden, ApplicationCont
         -> placement.setHighlighted(newVal));
   }
 
-  private void addActuatorListeners(MotorPlacement placement) {
+  private void addActuatorListeners(ActuatorPlacement placement) {
     onChangeOf(placement.getBrick().value).execute((oldVal, newVal) -> {
-      placement.setMostActiveSensorAngle(newVal);
+      placement.setTargetValue(newVal);
       refreshLabel(placement);
     });
   }

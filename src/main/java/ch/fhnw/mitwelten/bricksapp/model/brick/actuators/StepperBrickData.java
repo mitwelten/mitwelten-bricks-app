@@ -9,11 +9,11 @@ import ch.fhnw.imvs.bricks.actuators.StepperBrick;
 import ch.fhnw.mitwelten.bricksapp.model.brick.impl.ActuatorBrickData;
 import ch.fhnw.mitwelten.bricksapp.util.Location;
 
-public class MotorBrickData extends ActuatorBrickData {
+public class StepperBrickData extends ActuatorBrickData {
 
   private final StepperBrick inner;
 
-  public MotorBrickData(StepperBrick inner, Location location,  double faceAngle) {
+  public StepperBrickData(StepperBrick inner, Location location, double faceAngle) {
     super(inner, location, faceAngle);
     this.inner = inner;
   }

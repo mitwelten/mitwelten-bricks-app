@@ -1,8 +1,9 @@
 package ch.fhnw.mitwelten.bricksapp.controller;
 
+import ch.fhnw.mitwelten.bricksapp.model.BrickType;
 import ch.fhnw.mitwelten.bricksapp.model.Garden;
 import ch.fhnw.mitwelten.bricksapp.model.brick.sensors.DistanceBrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.actuators.MotorBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.actuators.StepperBrickData;
 import ch.fhnw.mitwelten.bricksapp.util.Constants;
 import ch.fhnw.mitwelten.bricksapp.util.Location;
 import org.junit.jupiter.api.Test;
@@ -42,7 +43,7 @@ public class AppControllerTest {
     ApplicationController controller = new ApplicationController(model);
 
     //when
-    DistanceBrickData brick = controller.createMockSensor();
+    DistanceBrickData brick = (DistanceBrickData) controller.addBrick(true, BrickType.DISTANCE, "");
     controller.awaitCompletion();
 
     //then
@@ -64,7 +65,7 @@ public class AppControllerTest {
     ApplicationController controller = new ApplicationController(model);
 
     //when
-    MotorBrickData brick = controller.createMockActuator();
+    StepperBrickData brick = (StepperBrickData) controller.addBrick(true, BrickType.STEPPER, "");
     controller.awaitCompletion();
 
     //then
@@ -84,24 +85,24 @@ public class AppControllerTest {
     //given
     Garden model = new Garden();
     ApplicationController controller = new ApplicationController(model);
-    MotorBrickData servo    = controller.createMockActuator();
-    DistanceBrickData distance = controller.createMockSensor();
+    StepperBrickData stepper   = (StepperBrickData) controller.addBrick(true, BrickType.STEPPER, "");
+    DistanceBrickData distance = (DistanceBrickData) controller.addBrick(true, BrickType.DISTANCE, "");
 
     double lat = 123.45, lon = 54.321;
     Location target          = new Location(lat, lon);
     Location initialLocation = new Location(Constants.SPAWN_POSITION_X, Constants.SPAWN_POSITION_Y);
 
     //when
-    controller.move(target, servo);
+    controller.move(target, stepper);
     controller.move(target, distance);
     controller.awaitCompletion();
 
     //then
     assertEquals(target, model.actuators.getValue().get(0).location.getValue());
-    assertEquals(target, model.sensors.getValue().get(0).location.getValue());
+    assertEquals(target, model.sensors  .getValue().get(0).location.getValue());
 
     //when
-    controller.move(initialLocation, servo);
+    controller.move(initialLocation, stepper);
     controller.move(initialLocation, distance);
     controller.awaitCompletion();
 

@@ -3,11 +3,13 @@
  Licensed under MIT License
  ---------------------------------------------------------------------------------------*/
 
-package ch.fhnw.mitwelten.bricksapp.view.brick;
+package ch.fhnw.mitwelten.bricksapp.view.brick.actuators;
 
 import ch.fhnw.mitwelten.bricksapp.controller.ApplicationController;
-import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.actuators.MotorBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.actuators.StepperBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.impl.ActuatorBrickData;
+import ch.fhnw.mitwelten.bricksapp.view.brick.ActuatorPlacement;
+import ch.fhnw.mitwelten.bricksapp.view.brick.BrickNode;
 import javafx.scene.Group;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
@@ -19,18 +21,18 @@ import javafx.scene.shape.Line;
 import javafx.scene.transform.Rotate;
 
 
-public class MotorPlacement extends BrickPlacement {
+public class StepperPlacement extends ActuatorPlacement {
 
-  private final MotorBrickData brick;
+  private final StepperBrickData brick;
   private final ApplicationController controller;
 
-  private Group  motorShape;
+  private Group stepperShape;
   private Rotate mostActiveSensorAngle;
   private Rotate frontViewAngle;
 
-  public MotorPlacement(ApplicationController controller, BrickData brick) {
+  public StepperPlacement(ApplicationController controller, ActuatorBrickData brick) {
     super(controller, brick, () -> controller.removeBrick(brick));
-    this.brick = (MotorBrickData) brick;
+    this.brick = (StepperBrickData) brick;
     this.controller = controller;
 
     initializeControls();
@@ -55,14 +57,14 @@ public class MotorPlacement extends BrickPlacement {
 
     BrickNode brickIcon   = new BrickNode(Color.BLUE);
 
-    motorShape = new Group(
+    stepperShape = new Group(
         brickIcon,
         outerCircle,
         mostActiveSensorIndicator,
         innerCircle,
         frontViewIndicator
     );
-    motorShape.setRotate(faceAngle);
+    stepperShape.setRotate(faceAngle);
   }
 
   @Override
@@ -97,20 +99,20 @@ public class MotorPlacement extends BrickPlacement {
   }
 
   public void setRotateBrickSymbol(double angel){
-    motorShape.setRotate(angel);
+    stepperShape.setRotate(angel);
   }
 
-  public void setMostActiveSensorAngle(double angle) {
+  public void setTargetValue(double angle) {
     mostActiveSensorAngle.setAngle(angle);
     frontViewAngle.setAngle(180 + brick.getPosition() - brick.faceAngle.getValue());
   }
 
   private void layoutControls() {
-    super.getChildren().addAll(motorShape);
+    super.getChildren().addAll(stepperShape);
   }
 
   @Override
-  public MotorBrickData getBrick() {
+  public StepperBrickData getBrick() {
     return brick;
   }
 }
