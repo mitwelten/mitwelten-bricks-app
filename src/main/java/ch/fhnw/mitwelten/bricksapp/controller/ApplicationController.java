@@ -16,7 +16,7 @@ import java.io.File;
 
 public class ApplicationController extends ControllerBase<Garden> {
   private final BrickController brickController;
-  private final MenuController menuController;
+  private final MenuController  menuController;
 
   public ApplicationController(Garden model) {
     super(model);
@@ -54,16 +54,20 @@ public class ApplicationController extends ControllerBase<Garden> {
   public void removeBrick(BrickData data) {
     brickController.removeBrick(data);
   }
+
   // Menu Controller delegation
   public MotorBrickData createMockActuator() {
     return menuController.createMockActuator();
   }
+
   public DistanceBrickData createMockSensor() {
     return menuController.createMockSensor();
   }
+
   public void createMqttSensor(String id) {
     menuController.createMqttSensor(id);
   }
+
   public void createMqttActuator(String id) {
     menuController.createMqttActuator(id);
   }
@@ -82,5 +86,9 @@ public class ApplicationController extends ControllerBase<Garden> {
 
   public void exportToFile(File file) {
     menuController.exportToFile(file);
+  }
+
+  public void test() {
+    brickController.test();
   }
 }

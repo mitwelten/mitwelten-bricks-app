@@ -79,6 +79,10 @@ public class Util {
     return (int) result;
   }
 
+  public static double absolutToRelativ(BrickData brick, double angle){
+    return (360 - (brick.faceAngle.getValue() - angle)) % 360;
+  }
+
   public static Location toCoordinates(double x, double y) {
     double lon = (LEFT_LONG + ((RIGHT_LONG - LEFT_LONG) / WINDOW_WIDTH) * x);
     double lat = (BOTTOM_LAT + ((TOP_LAT - BOTTOM_LAT) / WINDOW_HEIGHT) * y);
