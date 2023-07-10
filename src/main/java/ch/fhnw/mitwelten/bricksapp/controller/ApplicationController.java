@@ -21,7 +21,7 @@ public class ApplicationController extends ControllerBase<Garden> {
   public ApplicationController(Garden model) {
     super(model);
     brickController = new BrickController(model);
-    menuController  = new MenuController(model);
+    menuController  = new MenuController (model);
   }
 
   @Override
@@ -86,6 +86,10 @@ public class ApplicationController extends ControllerBase<Garden> {
 
   public void exportToFile(File file) {
     menuController.exportToFile(file);
+  }
+
+  public void functionTest(MotorBrickData brick, int[] positions) {
+    brickController.functionTest(brick, positions);
   }
 
   public void toggleUpdateLoop() {

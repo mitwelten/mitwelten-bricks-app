@@ -12,7 +12,6 @@ import ch.fhnw.mitwelten.bricksapp.model.Notification.NotificationType;
 import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.DistanceBrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.MotorBrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.PaxBrickData;
 import ch.fhnw.mitwelten.bricksapp.util.Location;
 import ch.fhnw.mitwelten.bricksapp.util.Util;
 import ch.fhnw.mitwelten.bricksapp.util.mvcbase.ControllerBase;
@@ -44,9 +43,6 @@ public class BrickController extends ControllerBase<Garden> {
         // update all sensor values
         model.distSensors.getValue().forEach(brick ->
             updateModel(set(brick.value, brick.getDistance())));
-
-        model.paxSensors.getValue().forEach(brick ->
-            updateModel(set(brick.value, brick.getValue())));
 
         // update most active sensor (acts as target position)
         DistanceBrickData mostActiveSensor = updateMostActiveSensor(model.distSensors.getValue());
@@ -116,8 +112,7 @@ public class BrickController extends ControllerBase<Garden> {
 
   public void removeBrick(BrickData data) {
     if(data instanceof DistanceBrickData) removeBrick((DistanceBrickData) data);
-    if(data instanceof MotorBrickData)    removeBrick((MotorBrickData)    data);
-    if(data instanceof PaxBrickData)      removeBrick((PaxBrickData)      data);
+    if(data instanceof MotorBrickData)    removeBrick((MotorBrickData) data);
   }
 
   private void removeBrick(DistanceBrickData data) {
@@ -134,14 +129,6 @@ public class BrickController extends ControllerBase<Garden> {
         .filter(b -> !b.getID().equals(data.getID()))
         .toList();
     updateModel(set(model.stepperActuators, modified));
-  }
-
-  private void removeBrick(PaxBrickData data) {
-    List<PaxBrickData> modified = new ArrayList<>(model.paxSensors.getValue())
-        .stream()
-        .filter(b -> !b.getID().equals(data.getID()))
-        .toList();
-    updateModel(set(model.paxSensors, modified));
   }
 
   public void toggleUpdateLoop(){
@@ -204,5 +191,4 @@ public class BrickController extends ControllerBase<Garden> {
       }
     }).start();
   }
-
 }

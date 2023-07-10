@@ -15,7 +15,7 @@ import javafx.scene.text.Text;
 import ch.fhnw.mitwelten.bricksapp.controller.ApplicationController;
 import ch.fhnw.mitwelten.bricksapp.util.Constants;
 
-public class Controls extends GridPane {
+public class MenuControls extends GridPane {
 
   private static final int DEFAULT_NODE_WIDTH = 125;
 
@@ -45,7 +45,7 @@ public class Controls extends GridPane {
 
   private final ApplicationController controller;
 
-  public Controls(ApplicationController controller, Runnable closeCallback) {
+  public MenuControls(ApplicationController controller, Runnable closeCallback) {
     this.controller = controller;
     setAlignment(Pos.CENTER);
     setHgap(12);

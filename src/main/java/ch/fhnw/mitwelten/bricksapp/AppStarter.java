@@ -20,14 +20,13 @@ import ch.fhnw.mitwelten.bricksapp.model.Garden;
 import ch.fhnw.mitwelten.bricksapp.util.Constants;
 import ch.fhnw.mitwelten.bricksapp.view.GardenGUI;
 import ch.fhnw.mitwelten.bricksapp.view.background.Grid;
-import ch.fhnw.mitwelten.bricksapp.view.menu.AppMenuBar;
+import ch.fhnw.mitwelten.bricksapp.view.menu.MenuBar;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -57,11 +56,12 @@ public class AppStarter extends Application {
     Pane background = new StackPane(new Grid(), copyright, new GardenGUI(controller));
     drawBackground(background);
 
-    AppMenuBar menu = new AppMenuBar(controller, primaryStage, this::stop);
+    MenuBar menu = new MenuBar(controller, primaryStage, this::stop);
     gui.setTop(menu);
     gui.setCenter(background);
 
     Scene scene = new Scene(gui);
+    scene.getStylesheets().add("styles/stylesheet.css");
     addKeyListener(scene);
 
     primaryStage.setScene(scene);

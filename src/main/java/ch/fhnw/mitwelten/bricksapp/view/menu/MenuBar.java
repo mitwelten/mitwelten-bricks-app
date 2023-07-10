@@ -10,7 +10,6 @@ import ch.fhnw.mitwelten.bricksapp.util.Util;
 import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Menu;
-import javafx.scene.control.MenuBar;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;
 import javafx.stage.FileChooser;
@@ -18,7 +17,7 @@ import javafx.stage.Stage;
 
 import java.io.File;
 
-public class AppMenuBar extends MenuBar {
+public class MenuBar extends javafx.scene.control.MenuBar {
 
   private Menu     menu;
   private MenuItem addBrick;
@@ -29,7 +28,7 @@ public class AppMenuBar extends MenuBar {
 
   private final ApplicationController controller;
 
-  public AppMenuBar(ApplicationController controller, Stage stage, Runnable shutdownCallback) {
+  public MenuBar(ApplicationController controller, Stage stage, Runnable shutdownCallback) {
     this.controller = controller;
     initializeControls();
     layoutControls();
@@ -39,7 +38,7 @@ public class AppMenuBar extends MenuBar {
   private void initializeListeners(Stage stage, Runnable shutdownCallback) {
     addBrick.setOnAction(_e -> {
       Stage dialog     = new Stage();
-      Scene popUpScene = new Scene(new Controls(controller, dialog::close), 350, 450);
+      Scene popUpScene = new Scene(new MenuControls(controller, dialog::close), 350, 450);
       dialog.setScene(popUpScene);
       dialog.initOwner(stage);
       dialog.showAndWait();

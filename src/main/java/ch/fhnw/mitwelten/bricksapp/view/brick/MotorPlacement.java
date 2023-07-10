@@ -9,24 +9,29 @@ import ch.fhnw.mitwelten.bricksapp.controller.ApplicationController;
 import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.MotorBrickData;
 import javafx.scene.Group;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.Region;
+import javafx.scene.control.Button;
+import javafx.scene.control.ContentDisplay;
+import javafx.scene.control.Tooltip;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.transform.Rotate;
 
+
 public class MotorPlacement extends BrickPlacement {
 
   private final MotorBrickData brick;
-  private Group  servoShape;
+  private final ApplicationController controller;
+
+  private Group  motorShape;
   private Rotate mostActiveSensorAngle;
   private Rotate frontViewAngle;
 
   public MotorPlacement(ApplicationController controller, BrickData brick) {
     super(controller, brick, () -> controller.removeBrick(brick));
     this.brick = (MotorBrickData) brick;
+    this.controller = controller;
 
     initializeControls();
     layoutControls();
@@ -55,7 +60,7 @@ public class MotorPlacement extends BrickPlacement {
     brickArea.setMinHeight(BrickNode.SYMBOL_HEIGHT);
     brickArea.setBackground(new Background(bgFill));
 
-    servoShape = new Group(
+    motorShape = new Group(
         brickArea,
         brickIcon,
         outerCircle,
@@ -63,7 +68,29 @@ public class MotorPlacement extends BrickPlacement {
         innerCircle,
         frontViewIndicator
     );
-    servoShape.setRotate(faceAngle);
+    motorShape.setRotate(faceAngle);
+  }
+
+  @Override
+  protected Pane labelHook(Pane group) {
+    Pane anchorPane = new AnchorPane();
+    Button fnTest = new Button();
+    fnTest.setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+    fnTest.getStyleClass().add("icon-button");
+
+    fnTest.setTooltip(new Tooltip("Run Function Test!"));
+
+    Region icon = new Region();
+    icon.getStyleClass().add("icon");
+    fnTest.setGraphic(icon);
+
+    AnchorPane.setBottomAnchor(fnTest, 15.0);
+    AnchorPane.setRightAnchor (fnTest, 5.0);
+
+    fnTest.setOnAction(e -> controller.functionTest(brick, new int[]{ 0, 90, 180, 270, 360, 180, 0 }));
+
+    anchorPane.getChildren().addAll(group, fnTest);
+    return anchorPane;
   }
 
   private Line createLine(double radius, Rotate angle) {
@@ -76,7 +103,7 @@ public class MotorPlacement extends BrickPlacement {
   }
 
   public void setRotateBrickSymbol(double angel){
-    servoShape.setRotate(angel);
+    motorShape.setRotate(angel);
   }
 
   public void setMostActiveSensorAngle(double angle) {
@@ -88,7 +115,7 @@ public class MotorPlacement extends BrickPlacement {
   }
 
   private void layoutControls() {
-    super.getChildren().addAll(servoShape);
+    super.getChildren().addAll(motorShape);
   }
 
   @Override
