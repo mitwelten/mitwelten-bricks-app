@@ -11,10 +11,7 @@ import ch.fhnw.mitwelten.bricksapp.model.brick.PaxBrickData;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.control.Label;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
@@ -27,6 +24,7 @@ public class PaxPlacement extends BrickPlacement {
   private HBox      labelContainer;
   private BrickNode brickIcon;
   private Group     paxNode;
+  private Circle    outerCircle;
 
   public PaxPlacement(ApplicationController controller, BrickData brick) {
     super(controller, brick, () -> controller.removeBrick(brick));
@@ -39,7 +37,11 @@ public class PaxPlacement extends BrickPlacement {
     brickIcon      = new BrickNode(Color.YELLOW);
     valueLabel     = new Label("100");
     labelContainer = new HBox(valueLabel);
-    paxNode        = new Group(brickIcon, labelContainer);
+
+    outerCircle = new Circle(BrickNode.CENTER_X, BrickNode.CENTER_Y, BrickNode.BRICK_HEIGHT);
+    outerCircle.setFill  (Color.rgb(255,255,200, 0.3));
+
+    paxNode = new Group(outerCircle, brickIcon, labelContainer);
     valueLabel.setFont(Font.font("Tahoma", FontWeight.BOLD, 12));
   }
 
@@ -52,6 +54,7 @@ public class PaxPlacement extends BrickPlacement {
 
   public void setActivityValue(int value) {
     valueLabel.setText(String.valueOf(value));
+    outerCircle.setRadius(BrickNode.BRICK_HEIGHT + (value / 2.0));
   }
 
   @Override

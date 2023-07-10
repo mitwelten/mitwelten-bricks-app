@@ -114,35 +114,7 @@ public class BrickController extends ControllerBase<Garden> {
     updateModel(set(model.removeButtonVisible, state));
   }
 
-  public void removeBrick(BrickData data) {
-    if(data instanceof DistanceBrickData) removeBrick((DistanceBrickData) data);
-    if(data instanceof MotorBrickData)    removeBrick((MotorBrickData)    data);
-    if(data instanceof PaxBrickData)      removeBrick((PaxBrickData)      data);
-  }
 
-  private void removeBrick(DistanceBrickData data) {
-    List<DistanceBrickData> modified = new ArrayList<>(model.distSensors.getValue())
-        .stream()
-        .filter(b -> !b.getID().equals(data.getID()))
-        .toList();
-    updateModel(set(model.distSensors, modified));
-  }
-
-  private void removeBrick(MotorBrickData data) {
-    List<MotorBrickData> modified = new ArrayList<>(model.stepperActuators.getValue())
-        .stream()
-        .filter(b -> !b.getID().equals(data.getID()))
-        .toList();
-    updateModel(set(model.stepperActuators, modified));
-  }
-
-  private void removeBrick(PaxBrickData data) {
-    List<PaxBrickData> modified = new ArrayList<>(model.paxSensors.getValue())
-        .stream()
-        .filter(b -> !b.getID().equals(data.getID()))
-        .toList();
-    updateModel(set(model.paxSensors, modified));
-  }
   public void toggleUpdateLoop(){
     if (!model.runningUpdateLoop.getValue()){
       updateModel(set(model.runningUpdateLoop, true));

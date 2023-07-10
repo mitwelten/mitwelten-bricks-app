@@ -52,7 +52,7 @@ public class ApplicationController extends ControllerBase<Garden> {
   }
 
   public void removeBrick(BrickData data) {
-    brickController.removeBrick(data);
+    menuController.removeBrick(data);
   }
 
   // Menu Controller delegation

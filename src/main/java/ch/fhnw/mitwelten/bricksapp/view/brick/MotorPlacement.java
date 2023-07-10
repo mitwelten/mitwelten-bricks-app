@@ -38,7 +38,7 @@ public class MotorPlacement extends BrickPlacement {
   }
 
   private void initializeControls() {
-    final double outerCircleRadius = ((BrickNode.SYMBOL_HEIGHT - BrickNode.HEIGHT_BRICK) / 2) + 3;
+    final double outerCircleRadius = ((BrickNode.SYMBOL_HEIGHT - BrickNode.BRICK_HEIGHT) / 2) + 3;
     final double innerCircleRadius = outerCircleRadius - 6;
 
     mostActiveSensorAngle = new Rotate();

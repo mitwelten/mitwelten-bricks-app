@@ -34,11 +34,11 @@ public class MenuController extends ControllerBase<Garden> {
   private int mockIdCounter  = 0;
   private double spiralValue = 5d;
 
-  private final Set<String> mqttIds;
+  private final Set<String> ids;
 
   public MenuController(Garden model) {
     super(model);
-    mqttIds = new HashSet<>();
+    ids = new HashSet<>();
   }
 
   private void addPaxSensor(PaxBrickData brick) {
@@ -157,11 +157,57 @@ public class MenuController extends ControllerBase<Garden> {
     return Constants.MOCK_ID_PREFIX + mockIdCounter++;
   }
 
-  public boolean isIdAssigned(String id){
-    if(!mqttIds.add(id)) {
+  public void removeBrick(BrickData data) {
+    String id = data.getID();
+    if (!ids.remove(id)){
       createNotification(
           NotificationType.ERROR,
-          "Create Brick from Config",
+          "Delete Brick",
+          "Remove Brick: Id " + id + " not assigned!"
+      );
+    }
+    if(data instanceof DistanceBrickData) removeBrick((DistanceBrickData) data);
+    if(data instanceof MotorBrickData)    removeBrick((MotorBrickData)    data);
+    if(data instanceof PaxBrickData)      removeBrick((PaxBrickData)      data);
+  }
+
+  private void removeBrick(DistanceBrickData data) {
+    List<DistanceBrickData> modified = new ArrayList<>(model.distSensors.getValue())
+        .stream()
+        .filter(b -> !b.getID().equals(data.getID()))
+        .toList();
+    updateModel(set(model.distSensors, modified));
+  }
+
+  private void removeBrick(MotorBrickData data) {
+    List<MotorBrickData> modified = new ArrayList<>(model.stepperActuators.getValue())
+        .stream()
+        .filter(b -> !b.getID().equals(data.getID()))
+        .toList();
+    updateModel(set(model.stepperActuators, modified));
+  }
+
+  private void removeBrick(PaxBrickData data) {
+    List<PaxBrickData> modified = new ArrayList<>(model.paxSensors.getValue())
+        .stream()
+        .filter(b -> !b.getID().equals(data.getID()))
+        .toList();
+    updateModel(set(model.paxSensors, modified));
+  }
+
+  public boolean isIdAssigned(String id){
+    if(id == null || id.equals("")){
+      createNotification(
+      NotificationType.ERROR,
+          "Error: Brick ID",
+          "Id must not be empty!"
+      );
+      return true;
+    }
+    if(!ids.add(id)) {
+      createNotification(
+          NotificationType.ERROR,
+          "Error: Brick ID",
           "Id is already assigned"
       );
       return true;

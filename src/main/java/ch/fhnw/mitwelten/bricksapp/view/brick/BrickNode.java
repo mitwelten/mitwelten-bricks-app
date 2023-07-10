@@ -15,8 +15,8 @@ import javafx.scene.shape.Rectangle;
 
 public class BrickNode extends Group {
 
-  public static final double HEIGHT_BRICK  = 22;
-  public static final double WIDTH_BRICK   = 34;
+  public static final double BRICK_HEIGHT  = 22;
+  public static final double BRICK_WIDTH   = 34;
   public static final double SYMBOL_HEIGHT = 45;
   public static final double SYMBOL_WIDTH  = 45;
 
@@ -58,7 +58,7 @@ public class BrickNode extends Group {
         CENTER_X,
         0
     );
-    body = new Rectangle(CENTER_Y - WIDTH_BRICK / 2, CENTER_X - HEIGHT_BRICK / 2, WIDTH_BRICK, HEIGHT_BRICK);
+    body = new Rectangle(CENTER_Y - BRICK_WIDTH / 2, CENTER_X - BRICK_HEIGHT / 2, BRICK_WIDTH, BRICK_HEIGHT);
     body.setArcHeight(BRICK_RADIUS);
     body.setArcWidth (BRICK_RADIUS);
 

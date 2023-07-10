@@ -68,7 +68,7 @@ public abstract class BrickPlacement extends Group {
     label.setFont(Font.font("SourceCodePro", FontWeight.NORMAL, 12));
 
     labelGroup = labelHook(new Pane(labelBackground, label));
-    labelGroup.relocate(BrickNode.WIDTH_BRICK + 15, -BrickNode.HEIGHT_BRICK + 30);
+    labelGroup.relocate(BrickNode.BRICK_WIDTH + 15, -BrickNode.BRICK_HEIGHT + 30);
 
     cross = new Group();
     Line line1 = createCrossLine(false);
