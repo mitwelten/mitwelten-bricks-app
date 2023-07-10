@@ -9,12 +9,11 @@ import ch.fhnw.mitwelten.bricksapp.controller.ApplicationController;
 import ch.fhnw.mitwelten.bricksapp.model.Garden;
 import ch.fhnw.mitwelten.bricksapp.model.Notification.Notification;
 import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.impl.SensorBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.sensors.DistanceBrickData;
 import ch.fhnw.mitwelten.bricksapp.util.Constants;
 import ch.fhnw.mitwelten.bricksapp.util.mvcbase.ViewMixin;
-import ch.fhnw.mitwelten.bricksapp.view.brick.BrickPlacement;
-import ch.fhnw.mitwelten.bricksapp.view.brick.DistancePlacement;
-import ch.fhnw.mitwelten.bricksapp.view.brick.MotorPlacement;
-import ch.fhnw.mitwelten.bricksapp.view.brick.PaxPlacement;
+import ch.fhnw.mitwelten.bricksapp.view.brick.*;
 import javafx.application.Platform;
 import javafx.scene.Group;
 import javafx.scene.control.Alert;
@@ -112,7 +111,7 @@ public class GardenGUI extends Pane implements ViewMixin<Garden, ApplicationCont
       alert.showAndWait();
     });
 
-    onChangeOf(model.stepperActuators).execute((oldValue, newValue) -> {
+    onChangeOf(model.actuators).execute((oldValue, newValue) -> {
           if(oldValue.size() > newValue.size()) {
             removePlacement(oldValue, newValue);
           } else {
@@ -128,34 +127,24 @@ public class GardenGUI extends Pane implements ViewMixin<Garden, ApplicationCont
         }
     );
 
-    onChangeOf(model.distSensors).execute((oldValue, newValue) -> {
+    onChangeOf(model.sensors).execute((oldValue, newValue) -> {
           if(oldValue.size() > newValue.size()) {
             removePlacement(oldValue, newValue);
           } else {
             if (newValue.isEmpty()) return;
-            DistancePlacement dp = addPlacement(
+            SensorPlacement dp = addPlacement(
                 model,
                 oldValue,
                 newValue,
-                (brick) -> new DistancePlacement(controller, brick)
+                (brick) -> {
+                  if(brick instanceof DistanceBrickData) {
+                    return new DistancePlacement(controller, (SensorBrickData) brick);
+                  } else {
+                    return new PaxPlacement(controller, (SensorBrickData) brick);
+                  }
+                }
             );
             addDistSensorListeners(dp);
-          }
-        }
-    );
-
-    onChangeOf(model.paxSensors).execute((oldValue, newValue) -> {
-          if(oldValue.size() > newValue.size()) {
-            removePlacement(oldValue, newValue);
-          } else {
-            if (newValue.isEmpty()) return;
-            PaxPlacement pp = addPlacement(
-                model,
-                oldValue,
-                newValue,
-                (brick) -> new PaxPlacement(controller, brick)
-            );
-            addPaxSensorListeners(pp);
           }
         }
     );
@@ -214,7 +203,7 @@ public class GardenGUI extends Pane implements ViewMixin<Garden, ApplicationCont
     });
   }
 
-  private void addDistSensorListeners(DistancePlacement placement) {
+  private void addDistSensorListeners(SensorPlacement placement) {
     onChangeOf(placement.getBrick().value).execute((oldVal, currentVal) -> {
       placement.setActivityValue(currentVal);
       refreshLabel(placement);
@@ -223,20 +212,11 @@ public class GardenGUI extends Pane implements ViewMixin<Garden, ApplicationCont
         -> placement.setHighlighted(newVal));
   }
 
-  private void addPaxSensorListeners(PaxPlacement placement) {
-    onChangeOf(placement.getBrick().value).execute((oldVal, currentVal) -> {
-      placement.setActivityValue(currentVal);
-      refreshLabel(placement);
-    });
-  }
-
   private void addActuatorListeners(MotorPlacement placement) {
-    onChangeOf(placement.getBrick().mostActiveAngle).execute((oldVal, newVal) -> {
+    onChangeOf(placement.getBrick().value).execute((oldVal, newVal) -> {
       placement.setMostActiveSensorAngle(newVal);
       refreshLabel(placement);
     });
-    onChangeOf(placement.getBrick().viewPortAngle).execute((oldVal, newVal) ->
-        placement.setFrontViewAngle(newVal));
   }
 
   private void refreshLabel(BrickPlacement placement){

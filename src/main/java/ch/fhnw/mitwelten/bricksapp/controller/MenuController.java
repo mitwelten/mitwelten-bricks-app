@@ -14,9 +14,11 @@ import ch.fhnw.mitwelten.bricksapp.model.Garden;
 import ch.fhnw.mitwelten.bricksapp.model.Notification.Notification;
 import ch.fhnw.mitwelten.bricksapp.model.Notification.NotificationType;
 import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.DistanceBrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.MotorBrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.PaxBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.impl.ActuatorBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.impl.SensorBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.sensors.DistanceBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.actuators.MotorBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.sensors.PaxBrickData;
 import ch.fhnw.mitwelten.bricksapp.util.Constants;
 import ch.fhnw.mitwelten.bricksapp.util.Location;
 import ch.fhnw.mitwelten.bricksapp.util.Util;
@@ -41,37 +43,25 @@ public class MenuController extends ControllerBase<Garden> {
     ids = new HashSet<>();
   }
 
-  private void addPaxSensor(PaxBrickData brick) {
-    var list = new ArrayList<>(model.paxSensors.getValue());
+  private void addSensor(SensorBrickData brick) {
+    var list = new ArrayList<>(model.sensors.getValue());
     Location spawnLocation = brick.location.getValue();
     if(spawnLocation.lat() == 0 && spawnLocation.lon() == 0) spawnLocation = calcSpawnPosition();
     list.add(brick);
     updateModel(
-        set(model.paxSensors, list),
+        set(model.sensors, list),
         set(brick.location, spawnLocation)
     );
     this.awaitCompletion();
   }
 
-  private void addDistSensor(DistanceBrickData brick) {
-    var list = new ArrayList<>(model.distSensors.getValue());
+  private void addActuator(ActuatorBrickData brick) {
+    var list = new ArrayList<>(model.actuators.getValue());
     Location spawnLocation = brick.location.getValue();
     if(spawnLocation.lat() == 0 && spawnLocation.lon() == 0) spawnLocation = calcSpawnPosition();
     list.add(brick);
     updateModel(
-        set(model.distSensors, list),
-        set(brick.location, spawnLocation)
-    );
-    this.awaitCompletion();
-  }
-
-  private void addActuator(MotorBrickData brick) {
-    var list = new ArrayList<>(model.stepperActuators.getValue());
-    Location spawnLocation = brick.location.getValue();
-    if(spawnLocation.lat() == 0 && spawnLocation.lon() == 0) spawnLocation = calcSpawnPosition();
-    list.add(brick);
-    updateModel(
-        set(model.stepperActuators, list),
+        set(model.actuators, list),
         set(brick.location, spawnLocation)
     );
     this.awaitCompletion();
@@ -81,8 +71,8 @@ public class MenuController extends ControllerBase<Garden> {
     updateModel(set(model.isLoading, true));
     boolean success = writeToFile(file,
         Stream.concat(
-            model.stepperActuators.getValue().stream(),
-            model.distSensors.getValue().stream()
+            model.actuators.getValue().stream(),
+            model.sensors.getValue().stream()
         ).toList()
     );
     if(!success){
@@ -94,9 +84,9 @@ public class MenuController extends ControllerBase<Garden> {
   public void printAllBrickData() {
     String sb = "Data Snapshot from:" + Util.getTimeStamp() + "\n" +
         "\nSensors:\n" +
-        toStringOfBrickList(model.distSensors.getValue()) +
+        toStringOfBrickList(model.sensors.getValue()) +
         "\nActuators:\n" +
-        toStringOfBrickList(model.stepperActuators.getValue());
+        toStringOfBrickList(model.actuators.getValue());
     System.out.println(sb);
   }
 
@@ -171,28 +161,20 @@ public class MenuController extends ControllerBase<Garden> {
     if(data instanceof PaxBrickData)      removeBrick((PaxBrickData)      data);
   }
 
-  private void removeBrick(DistanceBrickData data) {
-    List<DistanceBrickData> modified = new ArrayList<>(model.distSensors.getValue())
+  private void removeBrick(SensorBrickData brickData) {
+    List<SensorBrickData> modified = new ArrayList<>(model.sensors.getValue())
         .stream()
-        .filter(b -> !b.getID().equals(data.getID()))
+        .filter(b -> !b.getID().equals(brickData.getID()))
         .toList();
-    updateModel(set(model.distSensors, modified));
+    updateModel(set(model.sensors, modified));
   }
 
-  private void removeBrick(MotorBrickData data) {
-    List<MotorBrickData> modified = new ArrayList<>(model.stepperActuators.getValue())
+  private void removeBrick(ActuatorBrickData brickData) {
+    List<ActuatorBrickData> modified = new ArrayList<>(model.actuators.getValue())
         .stream()
-        .filter(b -> !b.getID().equals(data.getID()))
+        .filter(b -> !b.getID().equals(brickData.getID()))
         .toList();
-    updateModel(set(model.stepperActuators, modified));
-  }
-
-  private void removeBrick(PaxBrickData data) {
-    List<PaxBrickData> modified = new ArrayList<>(model.paxSensors.getValue())
-        .stream()
-        .filter(b -> !b.getID().equals(data.getID()))
-        .toList();
-    updateModel(set(model.paxSensors, modified));
+    updateModel(set(model.actuators, modified));
   }
 
   public boolean isIdAssigned(String id){
@@ -230,9 +212,9 @@ public class MenuController extends ControllerBase<Garden> {
     if (isSimulated)  id = createMockId();
     Brick brick = userData.connect(isSimulated ? model.mockProxy : model.mqttProxy, id);
     switch (userData) {
-      case PAX       -> addPaxSensor (new PaxBrickData((PaxBrick)           brick, new Location(lat, lon), faceAngle));
-      case STEPPER   -> addActuator  (new MotorBrickData((StepperBrick)     brick, new Location(lat, lon), faceAngle));
-      case DISTANCE  -> addDistSensor(new DistanceBrickData((DistanceBrick) brick, new Location(lat, lon), faceAngle));
+      case STEPPER   -> addActuator (new MotorBrickData((StepperBrick)     brick, new Location(lat, lon), faceAngle));
+      case PAX       -> addSensor   (new PaxBrickData((PaxBrick)           brick, new Location(lat, lon), faceAngle));
+      case DISTANCE  -> addSensor   (new DistanceBrickData((DistanceBrick) brick, new Location(lat, lon), faceAngle));
     }
   }
 }

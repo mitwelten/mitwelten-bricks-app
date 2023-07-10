@@ -1,8 +1,8 @@
 package ch.fhnw.mitwelten.bricksapp.controller;
 
 import ch.fhnw.mitwelten.bricksapp.model.Garden;
-import ch.fhnw.mitwelten.bricksapp.model.brick.DistanceBrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.MotorBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.sensors.DistanceBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.actuators.MotorBrickData;
 import ch.fhnw.mitwelten.bricksapp.util.Constants;
 import ch.fhnw.mitwelten.bricksapp.util.Location;
 import org.junit.jupiter.api.Test;
@@ -46,15 +46,15 @@ public class AppControllerTest {
     controller.awaitCompletion();
 
     //then
-    assertEquals(1, model.distSensors.getValue().size());
-    assertEquals(brick, model.distSensors.getValue().get(0));
+    assertEquals(1, model.sensors.getValue().size());
+    assertEquals(brick, model.sensors.getValue().get(0));
 
     //when
     controller.removeBrick(brick);
     controller.awaitCompletion();
 
     //then
-    assertTrue(model.distSensors.getValue().isEmpty());
+    assertTrue(model.sensors.getValue().isEmpty());
   }
 
   @Test
@@ -68,15 +68,15 @@ public class AppControllerTest {
     controller.awaitCompletion();
 
     //then
-    assertEquals(1, model.stepperActuators.getValue().size());
-    assertEquals(brick, model.stepperActuators.getValue().get(0));
+    assertEquals(1, model.actuators.getValue().size());
+    assertEquals(brick, model.actuators.getValue().get(0));
 
     //when
     controller.removeBrick(brick);
     controller.awaitCompletion();
 
     //then
-    assertTrue(model.stepperActuators.getValue().isEmpty());
+    assertTrue(model.actuators.getValue().isEmpty());
   }
 
   @Test
@@ -97,8 +97,8 @@ public class AppControllerTest {
     controller.awaitCompletion();
 
     //then
-    assertEquals(target, model.stepperActuators.getValue().get(0).location.getValue());
-    assertEquals(target, model.distSensors.getValue().get(0).location.getValue());
+    assertEquals(target, model.actuators.getValue().get(0).location.getValue());
+    assertEquals(target, model.sensors.getValue().get(0).location.getValue());
 
     //when
     controller.move(initialLocation, servo);
@@ -106,7 +106,7 @@ public class AppControllerTest {
     controller.awaitCompletion();
 
     //then
-    assertEquals(initialLocation, model.stepperActuators.getValue().get(0).location.getValue());
-    assertEquals(initialLocation, model.distSensors.getValue().get(0).location.getValue());
+    assertEquals(initialLocation, model.actuators.getValue().get(0).location.getValue());
+    assertEquals(initialLocation, model.sensors.getValue().get(0).location.getValue());
   }
 }

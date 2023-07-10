@@ -7,7 +7,7 @@ package ch.fhnw.mitwelten.bricksapp.controller;
 
 import ch.fhnw.mitwelten.bricksapp.model.Garden;
 import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.MotorBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.actuators.MotorBrickData;
 import ch.fhnw.mitwelten.bricksapp.model.BrickType;
 import ch.fhnw.mitwelten.bricksapp.util.Location;
 import ch.fhnw.mitwelten.bricksapp.util.mvcbase.ControllerBase;
@@ -15,12 +15,12 @@ import ch.fhnw.mitwelten.bricksapp.util.mvcbase.ControllerBase;
 import java.io.File;
 
 public class ApplicationController extends ControllerBase<Garden> {
-  private final BrickController brickController;
+  private final ProcessController brickController;
   private final MenuController  menuController;
 
   public ApplicationController(Garden model) {
     super(model);
-    brickController = new BrickController(model);
+    brickController = new ProcessController(model);
     menuController  = new MenuController (model);
   }
 

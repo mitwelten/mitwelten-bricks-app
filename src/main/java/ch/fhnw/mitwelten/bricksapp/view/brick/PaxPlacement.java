@@ -7,7 +7,8 @@ package ch.fhnw.mitwelten.bricksapp.view.brick;
 
 import ch.fhnw.mitwelten.bricksapp.controller.ApplicationController;
 import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.PaxBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.impl.SensorBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.sensors.PaxBrickData;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.control.Label;
@@ -17,7 +18,7 @@ import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
-public class PaxPlacement extends BrickPlacement {
+public class PaxPlacement extends SensorPlacement {
 
   private final PaxBrickData brick;
   private Label     valueLabel;
@@ -26,7 +27,7 @@ public class PaxPlacement extends BrickPlacement {
   private Group     paxNode;
   private Circle    outerCircle;
 
-  public PaxPlacement(ApplicationController controller, BrickData brick) {
+  public PaxPlacement(ApplicationController controller, SensorBrickData brick) {
     super(controller, brick, () -> controller.removeBrick(brick));
     this.brick = (PaxBrickData) brick;
     initializeControls();
@@ -52,6 +53,10 @@ public class PaxPlacement extends BrickPlacement {
     super.getChildren().add(paxNode);
   }
 
+  @Override
+  public void setHighlighted(boolean isHighlighted) {}
+
+  @Override
   public void setActivityValue(int value) {
     valueLabel.setText(String.valueOf(value));
     outerCircle.setRadius(BrickNode.BRICK_HEIGHT + (value / 2.0));

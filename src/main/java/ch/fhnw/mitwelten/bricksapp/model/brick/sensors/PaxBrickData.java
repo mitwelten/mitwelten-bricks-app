@@ -3,29 +3,20 @@
  Licensed under MIT License
  ---------------------------------------------------------------------------------------*/
 
-package ch.fhnw.mitwelten.bricksapp.model.brick;
+package ch.fhnw.mitwelten.bricksapp.model.brick.sensors;
 
 import ch.fhnw.imvs.bricks.sensors.PaxBrick;
+import ch.fhnw.mitwelten.bricksapp.model.brick.impl.SensorBrickData;
 import ch.fhnw.mitwelten.bricksapp.util.Location;
 import ch.fhnw.mitwelten.bricksapp.util.mvcbase.ObservableValue;
 
-public class PaxBrickData extends BrickData {
+public class PaxBrickData extends SensorBrickData {
 
-    public final ObservableValue<Integer> value;
-    public final ObservableValue<Boolean> isMostActive;
     private final PaxBrick inner;
-
-    public PaxBrickData(PaxBrick inner) {
-        super(inner);
-        value        = new ObservableValue<>(0);
-        isMostActive = new ObservableValue<>(false);
-        this.inner   = inner;
-    }
 
     public PaxBrickData(PaxBrick inner, Location location, double faceAngle) {
         super(inner, location, faceAngle);
-        value        = new ObservableValue<>(0);
-        isMostActive = new ObservableValue<>(false);
+
         this.inner   = inner;
     }
 

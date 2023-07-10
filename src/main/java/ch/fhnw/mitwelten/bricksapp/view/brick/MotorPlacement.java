@@ -7,7 +7,7 @@ package ch.fhnw.mitwelten.bricksapp.view.brick;
 
 import ch.fhnw.mitwelten.bricksapp.controller.ApplicationController;
 import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.MotorBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.actuators.MotorBrickData;
 import javafx.scene.Group;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContentDisplay;
@@ -102,10 +102,7 @@ public class MotorPlacement extends BrickPlacement {
 
   public void setMostActiveSensorAngle(double angle) {
     mostActiveSensorAngle.setAngle(angle);
-  }
-
-  public void setFrontViewAngle(double angle) {
-    frontViewAngle.setAngle(angle);
+    frontViewAngle.setAngle(180 + brick.getPosition() - brick.faceAngle.getValue());
   }
 
   private void layoutControls() {

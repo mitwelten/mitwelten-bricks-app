@@ -7,7 +7,8 @@ package ch.fhnw.mitwelten.bricksapp.view.brick;
 
 import ch.fhnw.mitwelten.bricksapp.controller.ApplicationController;
 import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.DistanceBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.impl.SensorBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.sensors.DistanceBrickData;
 import ch.fhnw.mitwelten.bricksapp.util.Constants;
 import javafx.scene.Group;
 import javafx.scene.paint.Color;
@@ -17,7 +18,7 @@ import javafx.scene.shape.StrokeType;
 
 import java.util.Objects;
 
-public class DistancePlacement extends BrickPlacement {
+public class DistancePlacement extends SensorPlacement {
 
   private final double VIEW_PORT_RADIUS = 25.0;
   private final DistanceBrickData brick;
@@ -26,7 +27,7 @@ public class DistancePlacement extends BrickPlacement {
   private BrickNode brickIcon;
   private Arc       sensorActivity;
 
-  public DistancePlacement(ApplicationController controller, BrickData brick) {
+  public DistancePlacement(ApplicationController controller, SensorBrickData brick) {
     super(controller, brick, () -> controller.removeBrick(brick));
     this.brick = (DistanceBrickData) brick;
     initializeControls();
@@ -80,6 +81,7 @@ public class DistancePlacement extends BrickPlacement {
     return brick;
   }
 
+  @Override
   public void setActivityValue(int value) {
     // Example: 25 - (25 / (max_sensor_value)) * current_value
     // sensor value is inverse for distance measurement

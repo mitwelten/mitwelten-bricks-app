@@ -10,9 +10,10 @@ import ch.fhnw.mitwelten.bricksapp.model.Garden;
 import ch.fhnw.mitwelten.bricksapp.model.Notification.Notification;
 import ch.fhnw.mitwelten.bricksapp.model.Notification.NotificationType;
 import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.DistanceBrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.MotorBrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.PaxBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.impl.ActuatorBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.impl.SensorBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.sensors.DistanceBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.actuators.MotorBrickData;
 import ch.fhnw.mitwelten.bricksapp.util.Constants;
 import ch.fhnw.mitwelten.bricksapp.util.Location;
 import ch.fhnw.mitwelten.bricksapp.util.Util;
@@ -20,13 +21,13 @@ import ch.fhnw.mitwelten.bricksapp.util.mvcbase.ControllerBase;
 
 import java.util.*;
 
-public class BrickController extends ControllerBase<Garden> {
+public class ProcessController extends ControllerBase<Garden> {
 
   private final ProxyGroup proxyGroup;
   private DistanceBrickData mostActive;
   private final Runnable updateLoopThread;
 
-  public BrickController(Garden model) {
+  public ProcessController(Garden model) {
     super(model);
 
     proxyGroup = new ProxyGroup();
@@ -43,18 +44,15 @@ public class BrickController extends ControllerBase<Garden> {
       while(model.runningUpdateLoop.getValue()) {
 
         // update all sensor values
-        model.distSensors.getValue().forEach(brick ->
-            updateModel(set(brick.value, brick.getDistance())));
-
-        model.paxSensors.getValue().forEach(brick ->
+        model.sensors.getValue().forEach(brick ->
             updateModel(set(brick.value, brick.getValue())));
 
         // update most active sensor (acts as target position)
-        DistanceBrickData mostActiveSensor = updateMostActiveSensor(model.distSensors.getValue());
+        DistanceBrickData mostActiveSensor = updateMostActiveSensor(model.sensors.getValue());
         mostActive = mostActiveSensor;
 
         // update actuator target position
-        model.stepperActuators.getValue().forEach(act -> {
+        model.actuators.getValue().forEach(act -> {
 
           // update only the actuators that have reached the last target value
           if(act.getPosition() == act.getTargetPosition()){
@@ -70,18 +68,17 @@ public class BrickController extends ControllerBase<Garden> {
   }
 
   private void updateActuatorVisualization() {
-    model.stepperActuators.getValue().forEach(motor ->
-        updateModel(set(motor.mostActiveAngle, (double) motor.getPosition()),
-                    set(motor.viewPortAngle,   180 + motor.getPosition() - motor.faceAngle.getValue())
-        )
-    );
+    model.actuators.getValue().forEach(motor ->
+        updateModel(set(motor.value, (double) motor.getPosition())));
   }
 
-  private DistanceBrickData updateMostActiveSensor(List<DistanceBrickData> bricks){
+  private DistanceBrickData updateMostActiveSensor(List<SensorBrickData> bricks){
     Optional<DistanceBrickData> maybeSensor = bricks
         .stream()
-        .peek(brick -> updateModel(set(brick.isMostActive, false)))
-        .min(Comparator.comparing(DistanceBrickData::getDistance));
+        .filter(brick -> brick instanceof DistanceBrickData)
+        .map   (brick -> (DistanceBrickData) brick)
+        .peek  (brick -> updateModel(set(brick.isMostActive, false)))
+        .min(Comparator.comparing(DistanceBrickData::getValue));
 
     if (maybeSensor.isPresent()){
       updateModel(set(maybeSensor.get().isMostActive, true));
@@ -91,15 +88,15 @@ public class BrickController extends ControllerBase<Garden> {
     }
   }
 
-  private void setTargetPosition(MotorBrickData motor, Location mostActiveLocation) {
-    Location motorLocation = motor.location.getValue();
+  private void setTargetPosition(ActuatorBrickData actuator, Location mostActiveLocation) {
+    Location motorLocation = actuator.location.getValue();
 
     double dLat   = mostActiveLocation.lat() - motorLocation.lat();
     double dLong  = mostActiveLocation.lon() - motorLocation.lon();
     double angle  = Util.calcAngle(dLong, dLat);
-    double target = Util.absolutToRelativ(motor, angle);
+    double target = Util.absolutToRelativ(actuator, angle);
 
-    motor.setPosition((int) target);
+    actuator.setPosition((int) target);
   }
 
   public void move(Location target, BrickData brick){
