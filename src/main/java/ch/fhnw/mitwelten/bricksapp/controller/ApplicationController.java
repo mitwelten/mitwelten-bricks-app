@@ -88,7 +88,7 @@ public class ApplicationController extends ControllerBase<Garden> {
     menuController.exportToFile(file);
   }
 
-  public void test() {
-    brickController.test();
+  public void toggleUpdateLoop() {
+    brickController.toggleUpdateLoop();
   }
 }
