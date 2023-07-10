@@ -27,4 +27,5 @@ public class Constants {
   public static final int SPAWN_POSITION_Y = 400;
 
   public static final int MAX_SENSOR_VALUE = 350;
+  public static final String TTN_BASE_URL = "";
 }

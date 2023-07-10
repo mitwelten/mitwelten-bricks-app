@@ -7,7 +7,7 @@ package ch.fhnw.mitwelten.bricksapp.view.brick;
 
 import ch.fhnw.mitwelten.bricksapp.controller.ApplicationController;
 import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.ServoBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.MotorBrickData;
 import javafx.scene.Group;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -17,16 +17,16 @@ import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.transform.Rotate;
 
-public class ServoPlacement extends BrickPlacement {
+public class MotorPlacement extends BrickPlacement {
 
-  private final ServoBrickData brick;
+  private final MotorBrickData brick;
   private Group  servoShape;
   private Rotate mostActiveSensorAngle;
   private Rotate frontViewAngle;
 
-  public ServoPlacement(ApplicationController controller, BrickData brick) {
+  public MotorPlacement(ApplicationController controller, BrickData brick) {
     super(controller, brick, () -> controller.removeBrick(brick));
-    this.brick = (ServoBrickData) brick;
+    this.brick = (MotorBrickData) brick;
 
     initializeControls();
     layoutControls();
@@ -92,7 +92,7 @@ public class ServoPlacement extends BrickPlacement {
   }
 
   @Override
-  public  ServoBrickData getBrick() {
+  public MotorBrickData getBrick() {
     return brick;
   }
 }

@@ -5,15 +5,16 @@
 
 package ch.fhnw.mitwelten.bricksapp.controller;
 
-import ch.fhnw.imvs.bricks.actuators.ServoBrick;
 import ch.fhnw.imvs.bricks.actuators.StepperBrick;
 import ch.fhnw.imvs.bricks.sensors.DistanceBrick;
+import ch.fhnw.imvs.bricks.sensors.PaxBrick;
 import ch.fhnw.mitwelten.bricksapp.model.Garden;
 import ch.fhnw.mitwelten.bricksapp.model.Notification.Notification;
 import ch.fhnw.mitwelten.bricksapp.model.Notification.NotificationType;
 import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.DistanceBrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.ServoBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.MotorBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.PaxBrickData;
 import ch.fhnw.mitwelten.bricksapp.util.Constants;
 import ch.fhnw.mitwelten.bricksapp.util.Location;
 import ch.fhnw.mitwelten.bricksapp.util.Util;
@@ -29,7 +30,7 @@ import static ch.fhnw.mitwelten.bricksapp.util.ConfigIOHandler.writeToFile;
 public class MenuController extends ControllerBase<Garden> {
 
   private int mockIdCounter  = 0;
-  double spiralValue = 5d;
+  private double spiralValue = 5d;
 
   private final Set<String> mqttIds;
 
@@ -38,9 +39,9 @@ public class MenuController extends ControllerBase<Garden> {
     mqttIds = new HashSet<>();
   }
 
-  public ServoBrickData createMockActuator(){
+  public MotorBrickData createMockActuator(){
     String id = createMockId();
-    ServoBrickData newBrick = new ServoBrickData(StepperBrick.connect(model.mockProxy, id));
+    MotorBrickData newBrick = new MotorBrickData(StepperBrick.connect(model.mockProxy, id));
     addActuator(newBrick);
     return newBrick;
   }
@@ -48,39 +49,56 @@ public class MenuController extends ControllerBase<Garden> {
   public DistanceBrickData createMockSensor(){
     String id = createMockId();
     DistanceBrickData newBrick = new DistanceBrickData(DistanceBrick.connect(model.mockProxy, id));
-    addSensor(newBrick);
+    addDistSensor(newBrick);
     return newBrick;
   }
 
   public Optional<DistanceBrickData> createMqttSensor(String id){
     if(isMqttIdAssigned(id)) return Optional.empty();
     DistanceBrickData newBrick = new DistanceBrickData(DistanceBrick.connect(model.mqttProxy, id));
-    addSensor(newBrick);
+    addDistSensor(newBrick);
     return Optional.of(newBrick);
   }
 
-  public Optional<ServoBrickData> createMqttActuator(String id){
+  public Optional<MotorBrickData> createMqttActuator(String id){
     if(isMqttIdAssigned(id)) return Optional.empty();
-    ServoBrickData newBrick = new ServoBrickData(StepperBrick.connect(model.mqttProxy, id));
+    MotorBrickData newBrick = new MotorBrickData(StepperBrick.connect(model.mqttProxy, id));
     addActuator(newBrick);
     return Optional.of(newBrick);
   }
 
-  private void addSensor(DistanceBrickData brick) {
-    var list = new ArrayList<>(model.sensors.getValue());
+  public Optional<PaxBrickData> createPaxSensor(String id) {
+    if(isMqttIdAssigned(id)) return Optional.empty();
+    PaxBrickData newBrick = new PaxBrickData(PaxBrick.connect(model.mqttProxy, id));
+    addPaxSensor(newBrick);
+    return Optional.of(newBrick);
+  }
+
+  private void addPaxSensor(PaxBrickData brick) {
+    var list = new ArrayList<>(model.paxSensors.getValue());
     list.add(brick);
     updateModel(
-        set(model.sensors, list),
+        set(model.paxSensors, list),
         set(brick.location, calcSpawnPosition())
     );
     this.awaitCompletion();
   }
 
-  private void addActuator(ServoBrickData brick) {
-    var list = new ArrayList<>(model.actuators.getValue());
+  private void addDistSensor(DistanceBrickData brick) {
+    var list = new ArrayList<>(model.distSensors.getValue());
     list.add(brick);
     updateModel(
-        set(model.actuators, list),
+        set(model.distSensors, list),
+        set(brick.location, calcSpawnPosition())
+    );
+    this.awaitCompletion();
+  }
+
+  private void addActuator(MotorBrickData brick) {
+    var list = new ArrayList<>(model.stepperActuators.getValue());
+    list.add(brick);
+    updateModel(
+        set(model.stepperActuators, list),
         set(brick.location, calcSpawnPosition())
     );
     this.awaitCompletion();
@@ -90,8 +108,8 @@ public class MenuController extends ControllerBase<Garden> {
     updateModel(set(model.isLoading, true));
     boolean success = writeToFile(file,
         Stream.concat(
-            model.actuators.getValue().stream(),
-            model.sensors  .getValue().stream()
+            model.stepperActuators.getValue().stream(),
+            model.distSensors.getValue().stream()
         ).toList()
     );
     if(!success){
@@ -103,9 +121,9 @@ public class MenuController extends ControllerBase<Garden> {
   public void printAllBrickData() {
     String sb = "Data Snapshot from:" + Util.getTimeStamp() + "\n" +
         "\nSensors:\n" +
-        toStringOfBrickList(model.sensors.getValue()) +
+        toStringOfBrickList(model.distSensors.getValue()) +
         "\nActuators:\n" +
-        toStringOfBrickList(model.actuators.getValue());
+        toStringOfBrickList(model.stepperActuators.getValue());
     System.out.println(sb);
   }
 
@@ -161,7 +179,7 @@ public class MenuController extends ControllerBase<Garden> {
     Optional<? extends BrickData> brick = Optional.empty();
     boolean isMock = Boolean.parseBoolean(line[0]);
     boolean isSensor   = line[1].contains(DistanceBrick.class.getSimpleName());
-    boolean isActuator = line[1].contains(ServoBrick   .class.getSimpleName());
+    boolean isActuator = line[1].contains(StepperBrick .class.getSimpleName());
 
     if(isMock){
       if(isSensor)   brick = Optional.of(createMockSensor());
@@ -200,4 +218,5 @@ public class MenuController extends ControllerBase<Garden> {
     spiralValue += 0.5;
     return new Location(x + offset, y + offset);
   }
+
 }

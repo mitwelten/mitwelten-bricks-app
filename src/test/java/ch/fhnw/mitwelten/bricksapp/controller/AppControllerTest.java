@@ -1,9 +1,8 @@
 package ch.fhnw.mitwelten.bricksapp.controller;
 
-import ch.fhnw.mitwelten.bricksapp.controller.ApplicationController;
 import ch.fhnw.mitwelten.bricksapp.model.Garden;
 import ch.fhnw.mitwelten.bricksapp.model.brick.DistanceBrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.ServoBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.MotorBrickData;
 import ch.fhnw.mitwelten.bricksapp.util.Constants;
 import ch.fhnw.mitwelten.bricksapp.util.Location;
 import org.junit.jupiter.api.Test;
@@ -47,15 +46,15 @@ public class AppControllerTest {
     controller.awaitCompletion();
 
     //then
-    assertEquals(1, model.sensors.getValue().size());
-    assertEquals(brick, model.sensors.getValue().get(0));
+    assertEquals(1, model.distSensors.getValue().size());
+    assertEquals(brick, model.distSensors.getValue().get(0));
 
     //when
     controller.removeBrick(brick);
     controller.awaitCompletion();
 
     //then
-    assertTrue(model.sensors.getValue().isEmpty());
+    assertTrue(model.distSensors.getValue().isEmpty());
   }
 
   @Test
@@ -65,19 +64,19 @@ public class AppControllerTest {
     ApplicationController controller = new ApplicationController(model);
 
     //when
-    ServoBrickData brick = controller.createMockActuator();
+    MotorBrickData brick = controller.createMockActuator();
     controller.awaitCompletion();
 
     //then
-    assertEquals(1, model.actuators.getValue().size());
-    assertEquals(brick, model.actuators.getValue().get(0));
+    assertEquals(1, model.stepperActuators.getValue().size());
+    assertEquals(brick, model.stepperActuators.getValue().get(0));
 
     //when
     controller.removeBrick(brick);
     controller.awaitCompletion();
 
     //then
-    assertTrue(model.actuators.getValue().isEmpty());
+    assertTrue(model.stepperActuators.getValue().isEmpty());
   }
 
   @Test
@@ -85,7 +84,7 @@ public class AppControllerTest {
     //given
     Garden model = new Garden();
     ApplicationController controller = new ApplicationController(model);
-    ServoBrickData    servo    = controller.createMockActuator();
+    MotorBrickData servo    = controller.createMockActuator();
     DistanceBrickData distance = controller.createMockSensor();
 
     double lat = 123.45, lon = 54.321;
@@ -98,8 +97,8 @@ public class AppControllerTest {
     controller.awaitCompletion();
 
     //then
-    assertEquals(target, model.actuators.getValue().get(0).location.getValue());
-    assertEquals(target, model.sensors  .getValue().get(0).location.getValue());
+    assertEquals(target, model.stepperActuators.getValue().get(0).location.getValue());
+    assertEquals(target, model.distSensors.getValue().get(0).location.getValue());
 
     //when
     controller.move(initialLocation, servo);
@@ -107,7 +106,7 @@ public class AppControllerTest {
     controller.awaitCompletion();
 
     //then
-    assertEquals(initialLocation, model.actuators.getValue().get(0).location.getValue());
-    assertEquals(initialLocation, model.sensors  .getValue().get(0).location.getValue());
+    assertEquals(initialLocation, model.stepperActuators.getValue().get(0).location.getValue());
+    assertEquals(initialLocation, model.distSensors.getValue().get(0).location.getValue());
   }
 }

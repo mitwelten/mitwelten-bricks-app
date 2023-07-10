@@ -7,21 +7,23 @@ package ch.fhnw.mitwelten.bricksapp.controller;
 
 import ch.fhnw.imvs.bricks.core.ProxyGroup;
 import ch.fhnw.mitwelten.bricksapp.model.Garden;
+import ch.fhnw.mitwelten.bricksapp.model.Notification.Notification;
+import ch.fhnw.mitwelten.bricksapp.model.Notification.NotificationType;
 import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.DistanceBrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.ServoBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.MotorBrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.PaxBrickData;
 import ch.fhnw.mitwelten.bricksapp.util.Location;
 import ch.fhnw.mitwelten.bricksapp.util.Util;
 import ch.fhnw.mitwelten.bricksapp.util.mvcbase.ControllerBase;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class BrickController extends ControllerBase<Garden> {
 
   private final ProxyGroup proxyGroup;
+  private DistanceBrickData mostActive;
+  private final Runnable updateLoopThread;
 
   public BrickController(Garden model) {
     super(model);
@@ -30,68 +32,74 @@ public class BrickController extends ControllerBase<Garden> {
     proxyGroup.addProxy(model.mockProxy);
     proxyGroup.addProxy(model.mqttProxy);
 
-    updateLoop();
+    updateLoopThread = initializeUpdateLoop(model);
   }
 
-  private void updateLoop() {
-    new Thread(() -> {
-      while(true) {
-        model.sensors.getValue().forEach(brick ->
+  private Runnable initializeUpdateLoop(Garden model) {
+    final Runnable updateLoopThread;
+
+    updateLoopThread = (() -> {
+      while(model.runningUpdateLoop.getValue()) {
+
+        // update all sensor values
+        model.distSensors.getValue().forEach(brick ->
             updateModel(set(brick.value, brick.getDistance())));
 
-        Optional<DistanceBrickData> mostActiveSensor = updateMostActiveSensor(model.sensors.getValue());
+        model.paxSensors.getValue().forEach(brick ->
+            updateModel(set(brick.value, brick.getValue())));
+
+        // update most active sensor (acts as target position)
+        DistanceBrickData mostActiveSensor = updateMostActiveSensor(model.distSensors.getValue());
+        mostActive = mostActiveSensor;
+
+        // update actuator target position
+        model.stepperActuators.getValue().forEach(act -> {
+
+          // update only the actuators that have reached the last target value
+          if(act.getPosition() == act.getTargetPosition()){
+            setTargetPosition(act, mostActiveSensor);
+          }
+        });
+        updateActuatorVisualization();
 
         proxyGroup.waitForUpdate();
-        if(mostActiveSensor.isPresent()){
-          model.actuators.getValue().forEach(brick -> setTargetPosition(brick, mostActiveSensor.get()));
-          do {
-            proxyGroup.waitForUpdate();
-            model.actuators.getValue().forEach(a -> {
-              System.out.println("vbat: " + a.getBatteryVoltage());
-              System.out.println("time: " + a.getTimestamp());
-              System.out.println("pos: " + a.getPosition());
-
-            });
-            model.actuators.getValue().forEach(act ->
-                updateModel(set(act.mostActiveAngle, (double) act.getPosition()),
-                            set(act.viewPortAngle,   180 + act.getPosition() - act.faceAngle.getValue())
-                ));
-          } while(!allActuatorsReachedPosition());
-        }
       }
-    }).start();
+    });
+    return updateLoopThread;
   }
 
-  private boolean allActuatorsReachedPosition(){
-    return model.actuators.getValue()
-        .stream()
-        .map(act -> act.getPosition() == act.getTargetPosition())
-        .reduce(true, (acc, cur) -> cur && acc);
+  private void updateActuatorVisualization() {
+    model.stepperActuators.getValue().forEach(motor ->
+        updateModel(set(motor.mostActiveAngle, (double) motor.getPosition()),
+                    set(motor.viewPortAngle,   180 + motor.getPosition() - motor.faceAngle.getValue())
+        )
+    );
   }
 
-  private Optional<DistanceBrickData> updateMostActiveSensor(List<DistanceBrickData> bricks){
-    if(bricks.isEmpty()) return Optional.empty();
-
+  private DistanceBrickData updateMostActiveSensor(List<DistanceBrickData> bricks){
     Optional<DistanceBrickData> maybeSensor = bricks
         .stream()
         .peek(brick -> updateModel(set(brick.isMostActive, false)))
         .min(Comparator.comparing(DistanceBrickData::getDistance));
 
-    maybeSensor.ifPresent(brick ->
-        updateModel(set(maybeSensor.get().isMostActive, true)));
-
-    return maybeSensor;
+    if (maybeSensor.isPresent()){
+      updateModel(set(maybeSensor.get().isMostActive, true));
+      return maybeSensor.get();
+    } else {
+      return mostActive;
+    }
   }
 
-  private void setTargetPosition(ServoBrickData servo, DistanceBrickData mostActivePlacement) {
+  private void setTargetPosition(MotorBrickData motor, DistanceBrickData mostActivePlacement) {
     Location mostActive    = mostActivePlacement.location.getValue();
-    Location servoLocation = servo.location.getValue();
+    Location motorLocation = motor.location.getValue();
 
-    double dLat  = mostActive.lat() - servoLocation.lat();
-    double dLong = mostActive.lon() - servoLocation.lon();
-    double angle = Util.calcAngle(dLong, dLat);
-//    int pos      = Util.calculateServoPositionFromAngle(servo, angle);
-    servo.setPosition((int) (angle - servo.faceAngle.getValue()));
+    double dLat   = mostActive.lat() - motorLocation.lat();
+    double dLong  = mostActive.lon() - motorLocation.lon();
+    double angle  = Util.calcAngle(dLong, dLat);
+    double target = Util.absolutToRelativ(motor, angle);
+
+    motor.setPosition((int) target);
   }
 
   public void move(Location target, BrickData brick){
@@ -108,22 +116,93 @@ public class BrickController extends ControllerBase<Garden> {
 
   public void removeBrick(BrickData data) {
     if(data instanceof DistanceBrickData) removeBrick((DistanceBrickData) data);
-    if(data instanceof ServoBrickData)    removeBrick((ServoBrickData) data);
+    if(data instanceof MotorBrickData)    removeBrick((MotorBrickData)    data);
+    if(data instanceof PaxBrickData)      removeBrick((PaxBrickData)      data);
   }
 
   private void removeBrick(DistanceBrickData data) {
-    List<DistanceBrickData> modified = new ArrayList<>(model.sensors.getValue())
+    List<DistanceBrickData> modified = new ArrayList<>(model.distSensors.getValue())
         .stream()
         .filter(b -> !b.getID().equals(data.getID()))
         .toList();
-    updateModel(set(model.sensors, modified));
+    updateModel(set(model.distSensors, modified));
   }
 
-  private void removeBrick(ServoBrickData data) {
-    List<ServoBrickData> modified = new ArrayList<>(model.actuators.getValue())
+  private void removeBrick(MotorBrickData data) {
+    List<MotorBrickData> modified = new ArrayList<>(model.stepperActuators.getValue())
         .stream()
         .filter(b -> !b.getID().equals(data.getID()))
         .toList();
-    updateModel(set(model.actuators, modified));
+    updateModel(set(model.stepperActuators, modified));
   }
+
+  private void removeBrick(PaxBrickData data) {
+    List<PaxBrickData> modified = new ArrayList<>(model.paxSensors.getValue())
+        .stream()
+        .filter(b -> !b.getID().equals(data.getID()))
+        .toList();
+    updateModel(set(model.paxSensors, modified));
+  }
+
+  public void toggleUpdateLoop(){
+    if (!model.runningUpdateLoop.getValue()){
+      updateModel(set(model.runningUpdateLoop, true));
+      new Thread(updateLoopThread).start();
+    } else {
+      updateModel(set(model.runningUpdateLoop, false));
+    }
+  }
+
+  private void createNotification(NotificationType type, String title, String message) {
+    Notification newNotification = new Notification(type, title, message);
+    Deque<Notification> queue    = new ArrayDeque<>(model.notifications.getValue());
+    queue.push(newNotification);
+    updateModel(set(
+        model.notifications,
+        queue
+    ));
+  }
+
+  public void functionTest(MotorBrickData brick, int[] positions) {
+    new Thread( () -> {
+
+      boolean prevUpdateLoopState = model.runningUpdateLoop.getValue();
+      if(prevUpdateLoopState) {
+        toggleUpdateLoop();
+      }
+
+      long startTime = System.currentTimeMillis();
+      boolean testFailed = true;
+
+      for (int pos : positions) {
+        brick.setPosition(pos);
+
+        while(brick.getPosition() != pos) {
+          proxyGroup.waitForUpdate();
+          updateActuatorVisualization();
+          try {
+            Thread.sleep(500);
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+          }
+        }
+
+        long duration = System.currentTimeMillis() - startTime ;
+        if(duration > 10_000){
+          break;
+        }
+        testFailed = false;
+      }
+
+      if(!testFailed){
+        long duration = System.currentTimeMillis() - startTime ;
+        createNotification(NotificationType.CONFIRMATION, "Function Test", "Test successful - took " + duration + "ms");
+      }
+
+      if(prevUpdateLoopState){
+        toggleUpdateLoop();
+      }
+    }).start();
+  }
+
 }
