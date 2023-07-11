@@ -111,7 +111,6 @@ public class GardenGUI extends Pane implements ViewMixin<Garden, ApplicationCont
         default           -> alertType = Alert.AlertType.ERROR;
       }
       Alert alert = new Alert(alertType, notification.msg());
-      alert.setTitle(notification.title());
       alert.showAndWait();
     });
 

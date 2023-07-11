@@ -57,7 +57,8 @@ public abstract class BrickData {
 //        "\ny: "   + brick.location.getValue().lat() +
         "\nx:\t"   + coordinates.lat() +
         "\ny:\t"   + coordinates.lon() +
-        "\nfa:\t"  + faceAngle.getValue();
+        "\nfa:\t"  + faceAngle.getValue() +
+        "\nbat:\t" + Math.round(getBatteryVoltage() * 1000.0) / 1000.0;
   }
 
   @Override

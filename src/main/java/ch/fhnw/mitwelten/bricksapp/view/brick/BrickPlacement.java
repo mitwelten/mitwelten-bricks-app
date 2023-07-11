@@ -56,7 +56,7 @@ public abstract class BrickPlacement extends Group {
     this.setCursor(Cursor.HAND);
 
     Region labelBackground = new Region();
-    labelBackground.setMinHeight(90);
+    labelBackground.setMinHeight(100);
     labelBackground.setMinWidth(105);
     labelBackground.relocate(-5, -15);
     labelBackground.setBackground(
