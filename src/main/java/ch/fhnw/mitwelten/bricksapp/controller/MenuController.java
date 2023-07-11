@@ -88,13 +88,13 @@ public class MenuController extends ControllerBase<Garden> {
     String sb = "Data Snapshot from:" + Util.getTimeStamp() + "\n" +
         "\nSensors:\n" +
         toStringOfBrickList(model.sensors.getValue()) +
-        "\nActuators:\n" +
+        "\n\nActuators:\n" +
         toStringOfBrickList(model.actuators.getValue());
     System.out.println(sb);
   }
 
   private String toStringOfBrickList(List<? extends BrickData> bricks) {
-    return String.join("\n", bricks.stream().map(BrickData::toString).toList());
+    return String.join("\n", bricks.stream().map(BrickData::toStringFormatted).toList());
   }
 
   public void importFromFile(File file){
@@ -129,15 +129,13 @@ public class MenuController extends ControllerBase<Garden> {
     double lat       = Double.parseDouble  (line[3]);
     double lon       = Double.parseDouble  (line[4]);
     double faceAngle = Double.parseDouble  (line[5]);
-    System.out.println("lat: " + lat);
-    System.out.println("lon: " + lon);
 
     Optional<BrickType> brickType = Arrays.stream(BrickType.values())
         .filter(bt -> line[1].contains(bt.toString()))
         .findAny();
 
     brickType.ifPresentOrElse(
-        bt -> addBrick(isMock, bt, line[2], lat, lon, faceAngle),
+        bt -> addBrick(isMock, bt, line[2], new Location(lat, lon), faceAngle),
         () -> createNotification(
             NotificationType.ERROR,
             "Create Brick from Config",
@@ -146,7 +144,7 @@ public class MenuController extends ControllerBase<Garden> {
     );
   }
 
-  private String createMockId() {
+  public String getMockId() {
     return Constants.MOCK_ID_PREFIX + mockIdCounter++;
   }
 
@@ -160,7 +158,7 @@ public class MenuController extends ControllerBase<Garden> {
       );
     }
     if(data instanceof DistanceBrickData) removeBrick((DistanceBrickData) data);
-    if(data instanceof StepperBrickData)    removeBrick((StepperBrickData)    data);
+    if(data instanceof StepperBrickData)  removeBrick((StepperBrickData)    data);
     if(data instanceof PaxBrickData)      removeBrick((PaxBrickData)      data);
   }
 
@@ -180,7 +178,7 @@ public class MenuController extends ControllerBase<Garden> {
     updateModel(set(model.actuators, modified));
   }
 
-  public boolean isIdAssigned(String id){
+  public boolean isValidId(String id) {
     if(id == null || id.equals("")){
       createNotification(
       NotificationType.ERROR,
@@ -201,14 +199,13 @@ public class MenuController extends ControllerBase<Garden> {
   }
 
 
-  public BrickData addBrick(boolean isSimulated, BrickType userData, String id, double lat, double lon, double faceAngle) {
-    if (isSimulated)  id = createMockId();
+  public BrickData addBrick(boolean isSimulated, BrickType userData, String id, Location location, double faceAngle) {
     Brick brick = userData.connect(isSimulated ? model.mockProxy : model.mqttProxy, id);
     BrickData brickData = null;
     switch (userData) {
-      case STEPPER   -> brickData = addActuator(new StepperBrickData((StepperBrick)   brick, new Location(lat, lon), faceAngle));
-      case PAX       -> brickData = addSensor  (new PaxBrickData((PaxBrick)           brick, new Location(lat, lon), faceAngle));
-      case DISTANCE  -> brickData = addSensor  (new DistanceBrickData((DistanceBrick) brick, new Location(lat, lon), faceAngle));
+      case STEPPER   -> brickData = addActuator(new StepperBrickData((StepperBrick)   brick, location, faceAngle));
+      case PAX       -> brickData = addSensor  (new PaxBrickData((PaxBrick)           brick, location, faceAngle));
+      case DISTANCE  -> brickData = addSensor  (new DistanceBrickData((DistanceBrick) brick, location, faceAngle));
     }
     return brickData;
   }

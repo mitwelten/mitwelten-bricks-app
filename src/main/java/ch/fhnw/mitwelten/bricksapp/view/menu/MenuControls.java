@@ -121,13 +121,18 @@ public class MenuControls extends BorderPane {
       comboBox.setValue(comboBox.getItems().get(0));
     });
 
+    isSimulated.selectedProperty().addListener((_1, _2, newValue) -> {
+      comboBox.setDisable(newValue);
+    });
+
     closeDialogBtn.setOnAction(e -> closeCallback.run());
     addBrickBtn.setOnAction(e -> {
-          if (!controller.isIdAssigned(comboBox.getValue())) {
+      String brickId = isSimulated.isSelected() ? controller.getMockId() : comboBox.getValue();
+          if (!controller.isIdAssigned(brickId)) {
             controller.addBrick(
                 isSimulated.isSelected(),
                 (BrickType) brickTypeGroup.getSelectedToggle().getUserData(),
-                comboBox.getValue()
+                brickId
             );
           }
         }

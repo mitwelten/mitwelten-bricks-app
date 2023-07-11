@@ -27,15 +27,4 @@ public abstract class ActuatorBrickData extends BrickData {
   public int getTargetPosition(){
     return target;
   }
-
-  @Override
-  public String toStringFormatted() {
-    return super.toStringFormatted()
-        + "\nval:\t" + Math.round(value.getValue());
-  }
-
-  @Override
-  public String toString() {
-    return "Stepper" + "," + super.toString();
-  }
 }

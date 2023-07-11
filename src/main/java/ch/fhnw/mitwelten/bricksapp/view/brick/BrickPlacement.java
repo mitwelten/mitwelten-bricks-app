@@ -77,7 +77,7 @@ public abstract class BrickPlacement extends Group {
     crossCircle.setStrokeWidth(1);
     crossCircle.setFill(Color.rgb(255,0,0, 1));
     cross.getChildren().addAll(crossCircle, line1, line2);
-    cross.relocate(40,-15);
+    cross.relocate(30,-15);
 
     cross.setOnMouseClicked(e -> {
       if(e.isShiftDown()){

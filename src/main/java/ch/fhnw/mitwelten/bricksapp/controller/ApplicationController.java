@@ -38,7 +38,7 @@ public class ApplicationController extends ControllerBase<Garden> {
     menuController .shutdown();
   }
 
-  // BrickController delegation
+  // ProcessController delegation
   public void move(Location target, BrickData brickData){
     brickController.move(target, brickData);
   }
@@ -55,8 +55,7 @@ public class ApplicationController extends ControllerBase<Garden> {
     menuController.removeBrick(data);
   }
 
-  // Menu Controller delegation
-
+  // MenuController delegation
   public void printAllBrickData() {
     menuController.printAllBrickData();
   }
@@ -78,10 +77,14 @@ public class ApplicationController extends ControllerBase<Garden> {
   }
 
   public BrickData addBrick(boolean isSimulated, BrickType userData, String id) {
-    return menuController.addBrick(isSimulated, userData, id, 0, 0, 0);
+    return menuController.addBrick(isSimulated, userData, id, new Location(0.0, 0.0), 0);
   }
 
   public boolean isIdAssigned(String id) {
-    return menuController.isIdAssigned(id);
+    return menuController.isValidId(id);
+  }
+
+  public String getMockId() {
+    return menuController.getMockId();
   }
 }
