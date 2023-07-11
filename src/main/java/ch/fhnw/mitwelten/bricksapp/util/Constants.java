@@ -23,8 +23,8 @@ public class Constants {
   public static final String CSV_PATH    = "src/main/resources/";
   public static final String PAX_ID_PATH = "src/main/resources/id/";
 
-  public static final String MOCK_ID_PREFIX   = "(mock): ";
-  public static final String MQTT_ID_PREFIX   = "(mqtt): ";
+  public static final String SIM_ID_PREFIX  = "(sim): ";
+  public static final String MQTT_ID_PREFIX = "(mqtt): ";
 
   public static final int SPAWN_POSITION_X = 400;
   public static final int SPAWN_POSITION_Y = 400;

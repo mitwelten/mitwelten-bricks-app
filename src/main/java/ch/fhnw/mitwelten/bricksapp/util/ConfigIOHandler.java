@@ -17,10 +17,10 @@ public class ConfigIOHandler {
 
   public static boolean writeToFile(File file, List<? extends BrickData> bricks) {
     try (PrintWriter printWriter = new PrintWriter(file)) {
-      printWriter.write("mock,brick,id,lat,long,faceAngle\n");
+      printWriter.write("sim,brick,id,lat,long,faceAngle\n");
       bricks.stream()
           .map(s -> {
-            boolean type = s.getID().contains("mock");
+            boolean type = s.getID().contains("sim");
             return String.valueOf(type).concat(",").concat(s.toString());
           })
           .map(s -> s.concat("\n"))

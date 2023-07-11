@@ -11,21 +11,23 @@ import ch.fhnw.imvs.bricks.sensors.DistanceBrick;
 import ch.fhnw.imvs.bricks.sensors.PaxBrick;
 import ch.fhnw.mitwelten.bricksapp.model.BrickType;
 import ch.fhnw.mitwelten.bricksapp.model.Garden;
-import ch.fhnw.mitwelten.bricksapp.model.Notification.Notification;
 import ch.fhnw.mitwelten.bricksapp.model.Notification.NotificationType;
 import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.actuators.StepperBrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.impl.ActuatorBrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.impl.SensorBrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.sensors.DistanceBrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.actuators.StepperBrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.sensors.PaxBrickData;
-import ch.fhnw.mitwelten.bricksapp.util.Constants;
 import ch.fhnw.mitwelten.bricksapp.util.Location;
 import ch.fhnw.mitwelten.bricksapp.util.Util;
 import ch.fhnw.mitwelten.bricksapp.util.mvcbase.ControllerBase;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
 import static ch.fhnw.mitwelten.bricksapp.util.ConfigIOHandler.readFromFile;
@@ -34,14 +36,12 @@ import static ch.fhnw.mitwelten.bricksapp.util.Util.calcSpawnPosition;
 
 public class MenuController extends ControllerBase<Garden> {
 
-  private int mockIdCounter  = 0;
-  private double spiralValue = 5d;
+  private double spiralValue     = 5d;
+  private final BiConsumer<NotificationType, String> createNotification;
 
-  private final Set<String> ids;
-
-  public MenuController(Garden model) {
+  public MenuController(Garden model, BiConsumer<NotificationType, String> createNotification) {
     super(model);
-    ids = new HashSet<>();
+    this.createNotification = createNotification;
   }
 
   private SensorBrickData addSensor(SensorBrickData brick) {
@@ -79,7 +79,7 @@ public class MenuController extends ControllerBase<Garden> {
         ).toList()
     );
     if(!success){
-      createNotification(NotificationType.ERROR, "Export config", "Failed to export config!");
+      createNotification.accept(NotificationType.ERROR, "Export config: Failed to export config!");
     }
     updateModel(set(model.isLoading, false));
   }
@@ -101,20 +101,12 @@ public class MenuController extends ControllerBase<Garden> {
     updateModel(set(model.isLoading, true));
     readFromFile(file).ifPresentOrElse(
         this::importConfigFromList,
-        () -> createNotification(NotificationType.ERROR, "Load Config", "Failed to read config!")
+        () -> createNotification.accept(NotificationType.ERROR, "Load Config: Failed to read config!")
     );
     updateModel(set(model.isLoading, false));
   }
 
-  private void createNotification(NotificationType type, String title, String message) {
-    Notification newNotification = new Notification(type, title, message);
-    Deque<Notification> queue    = new ArrayDeque<>(model.notifications.getValue());
-    queue.push(newNotification);
-    updateModel(set(
-        model.notifications,
-        queue
-    ));
-  }
+
 
   private void importConfigFromList(List<String> lines) {
     lines.stream()
@@ -124,41 +116,28 @@ public class MenuController extends ControllerBase<Garden> {
   }
 
   private void createBrick(String[] line) {
-    // line content:  0: mock, 1: brick, 2: id, 3: lat, 4: long, 5: faceAngle
-    boolean isMock   = Boolean.parseBoolean(line[0]);
-    double lat       = Double.parseDouble  (line[3]);
-    double lon       = Double.parseDouble  (line[4]);
-    double faceAngle = Double.parseDouble  (line[5]);
+    // line content:  0: sim, 1: brick, 2: id, 3: lat, 4: long, 5: faceAngle
+    boolean isSimulated = Boolean.parseBoolean(line[0]);
+    double lat          = Double.parseDouble  (line[3]);
+    double lon          = Double.parseDouble  (line[4]);
+    double faceAngle    = Double.parseDouble  (line[5]);
 
     Optional<BrickType> brickType = Arrays.stream(BrickType.values())
         .filter(bt -> line[1].contains(bt.toString()))
         .findAny();
 
     brickType.ifPresentOrElse(
-        bt -> addBrick(isMock, bt, line[2], new Location(lat, lon), faceAngle),
-        () -> createNotification(
+        bt -> addBrick(isSimulated, bt, line[2], new Location(lat, lon), faceAngle),
+        () -> createNotification.accept(
             NotificationType.ERROR,
-            "Create Brick from Config",
-            "Failed to create Brick from CSV Data!"
+            "Create Brick from Config: Failed to create Brick from CSV Data!"
         )
     );
   }
 
-  public String getMockId() {
-    return Constants.MOCK_ID_PREFIX + mockIdCounter++;
-  }
-
   public void removeBrick(BrickData data) {
-    String id = data.getID();
-    if (!ids.remove(id)){
-      createNotification(
-          NotificationType.ERROR,
-          "Delete Brick",
-          "Remove Brick: Id " + id + " not assigned!"
-      );
-    }
     if(data instanceof DistanceBrickData) removeBrick((DistanceBrickData) data);
-    if(data instanceof StepperBrickData)  removeBrick((StepperBrickData)    data);
+    if(data instanceof StepperBrickData)  removeBrick((StepperBrickData)  data);
     if(data instanceof PaxBrickData)      removeBrick((PaxBrickData)      data);
   }
 
@@ -177,27 +156,6 @@ public class MenuController extends ControllerBase<Garden> {
         .toList();
     updateModel(set(model.actuators, modified));
   }
-
-  public boolean isValidId(String id) {
-    if(id == null || id.equals("")){
-      createNotification(
-      NotificationType.ERROR,
-          "Error: Brick ID",
-          "Id must not be empty!"
-      );
-      return true;
-    }
-    if(!ids.add(id)) {
-      createNotification(
-          NotificationType.ERROR,
-          "Error: Brick ID",
-          "Id is already assigned"
-      );
-      return true;
-    }
-    return false;
-  }
-
 
   public BrickData addBrick(boolean isSimulated, BrickType userData, String id, Location location, double faceAngle) {
     Brick brick = userData.connect(isSimulated ? model.mockProxy : model.mqttProxy, id);

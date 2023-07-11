@@ -7,7 +7,6 @@ package ch.fhnw.mitwelten.bricksapp.controller;
 
 import ch.fhnw.imvs.bricks.core.ProxyGroup;
 import ch.fhnw.mitwelten.bricksapp.model.Garden;
-import ch.fhnw.mitwelten.bricksapp.model.Notification.Notification;
 import ch.fhnw.mitwelten.bricksapp.model.Notification.NotificationType;
 import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.impl.ActuatorBrickData;
@@ -20,15 +19,18 @@ import ch.fhnw.mitwelten.bricksapp.util.Util;
 import ch.fhnw.mitwelten.bricksapp.util.mvcbase.ControllerBase;
 
 import java.util.*;
+import java.util.function.BiConsumer;
 
 public class ProcessController extends ControllerBase<Garden> {
 
   private final ProxyGroup proxyGroup;
   private DistanceBrickData mostActive;
   private final Runnable updateLoopThread;
+  private final BiConsumer<NotificationType, String> createNotification;
 
-  public ProcessController(Garden model) {
+  public ProcessController(Garden model, BiConsumer<NotificationType, String> createNotification) {
     super(model);
+    this.createNotification = createNotification;
 
     proxyGroup = new ProxyGroup();
     proxyGroup.addProxy(model.mockProxy);
@@ -121,16 +123,6 @@ public class ProcessController extends ControllerBase<Garden> {
     }
   }
 
-  private void createNotification(NotificationType type, String title, String message) {
-    Notification newNotification = new Notification(type, title, message);
-    Deque<Notification> queue    = new ArrayDeque<>(model.notifications.getValue());
-    queue.push(newNotification);
-    updateModel(set(
-        model.notifications,
-        queue
-    ));
-  }
-
   public void functionTest(StepperBrickData brick, int[] positions) {
     new Thread( () -> {
 
@@ -164,7 +156,7 @@ public class ProcessController extends ControllerBase<Garden> {
 
       if(!testFailed){
         long duration = System.currentTimeMillis() - startTime ;
-        createNotification(NotificationType.CONFIRMATION, "Function Test", "Test successful - took " + duration + "ms");
+        createNotification.accept(NotificationType.CONFIRMATION, "Function Test: Test successful - took " + duration + "ms");
       }
 
       if(prevUpdateLoopState){

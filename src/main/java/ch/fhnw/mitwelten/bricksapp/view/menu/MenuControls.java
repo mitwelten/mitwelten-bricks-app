@@ -127,7 +127,7 @@ public class MenuControls extends BorderPane {
 
     closeDialogBtn.setOnAction(e -> closeCallback.run());
     addBrickBtn.setOnAction(e -> {
-      String brickId = isSimulated.isSelected() ? controller.getMockId() : comboBox.getValue();
+      String brickId = isSimulated.isSelected() ? controller.getSimulatedId() : comboBox.getValue();
           if (!controller.isIdAssigned(brickId)) {
             controller.addBrick(
                 isSimulated.isSelected(),
