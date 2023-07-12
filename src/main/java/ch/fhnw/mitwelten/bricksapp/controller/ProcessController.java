@@ -65,20 +65,20 @@ public class ProcessController extends ControllerBase<Garden> {
         do {
           proxyGroup.waitForUpdate();
           updateActuatorVisualization();
-        } while (!allActuatorsReachedPosition());
+        } while (!hasAllActuatorReachedTarget());
       }
     });
     return updateLoopThread;
   }
 
-
-  private boolean allActuatorsReachedPosition() {
-    boolean result = true;
-    List<ActuatorBrickData> allActuators = model.actuators.getValue();
-    for(ActuatorBrickData actuator : allActuators){
-      result = result && actuator.getPosition() == actuator.getTargetPosition();
-    }
-    return result;
+  private boolean hasAllActuatorReachedTarget() {
+    return model.actuators.getValue()
+        .stream()
+        .reduce(
+            true,
+            (acc, cur) -> acc && cur.getTargetPosition() == cur.getPosition(),
+            Boolean::logicalAnd
+        );
   }
 
   private void updateActuatorVisualization() {
