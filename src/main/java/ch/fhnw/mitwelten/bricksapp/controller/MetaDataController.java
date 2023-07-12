@@ -103,48 +103,54 @@ public class MetaDataController extends ControllerBase<Garden> {
 
   private void refreshPaxData() {
     System.out.println("Updating PAX data...");
-    List<String> allNodeLabels = new ArrayList<>(Collections.emptyList());
-    Map<String, Location> paxLocations = new HashMap<>(Collections.emptyMap());
-    String allJsonIds = jsonFromUrl(PAX_LOCATION_URL,"");
-    JSONArray allIds = new JSONArray(allJsonIds);
+    updateModel(set(model.isLoading, true));
+    new Thread(() -> {
 
-    for (int i = 0; i < allIds.length(); i++) {
-      JSONObject deployment = allIds.getJSONObject(i);
-      int deployment_id = deployment.getInt("deployment_id");
-      String deploymentDatas = jsonFromUrl(PAX_DEPLOYMENT_URL, String.valueOf(deployment_id));
+      List<String> allNodeLabels = new ArrayList<>(Collections.emptyList());
+      Map<String, Location> paxLocations = new HashMap<>(Collections.emptyMap());
+      String allJsonIds = jsonFromUrl(PAX_LOCATION_URL,"");
+      JSONArray allIds = new JSONArray(allJsonIds);
 
-      try {
-        String nodeLabel = new JSONObject(deploymentDatas).getJSONObject("node").getString("node_label");
-        allNodeLabels.add(nodeLabel);
+      for (int i = 0; i < allIds.length(); i++) {
+        JSONObject deployment = allIds.getJSONObject(i);
+        int deployment_id = deployment.getInt("deployment_id");
+        String deploymentDatas = jsonFromUrl(PAX_DEPLOYMENT_URL, String.valueOf(deployment_id));
+
         try {
-          JSONObject location = new JSONObject(deploymentDatas).getJSONObject("location");
-          double lat = location.getDouble("lat");
-          double lon = location.getDouble("lon");
-          paxLocations.put(nodeLabel, new Location(lat, lon));
+          String nodeLabel = new JSONObject(deploymentDatas).getJSONObject("node").getString("node_label");
+          allNodeLabels.add(nodeLabel);
+          try {
+            JSONObject location = new JSONObject(deploymentDatas).getJSONObject("location");
+            double lat = location.getDouble("lat");
+            double lon = location.getDouble("lon");
+            paxLocations.put(nodeLabel, new Location(lat, lon));
+          } catch(Exception e){
+            System.err.println("Could not fetch Location deployment data!");
+            System.err.println("message: " + e.getMessage());
+          }
         } catch(Exception e){
-          System.err.println("Could not fetch Location deployment data!");
+          System.err.println("Could not fetch PAX deployment data!");
           System.err.println("message: " + e.getMessage());
         }
-      } catch(Exception e){
-        System.err.println("Could not fetch PAX deployment data!");
-        System.err.println("message: " + e.getMessage());
       }
-    }
 
-    ConfigIOHandler.writeToFile(
-        new File(Constants.ID_PATH + "Pax"),
-        allNodeLabels.stream().map(s -> s + "\n").toList()
-    );
+      ConfigIOHandler.writeToFile(
+          new File(Constants.ID_PATH + "Pax"),
+          allNodeLabels.stream().map(s -> s + "\n").toList()
+      );
 
-    ConfigIOHandler.writeToFile(new File(Constants.LOCATION_PATH + "paxLocation"),
-        paxLocations.keySet()
-            .stream()
-            .map(key -> {
-              Location l = paxLocations.get(key);
-              return key + "," + l.lat() + "," + l.lon() + "\n";
-            }).toList());
+      ConfigIOHandler.writeToFile(new File(Constants.LOCATION_PATH + "paxLocation"),
+          paxLocations.keySet()
+              .stream()
+              .map(key -> {
+                Location l = paxLocations.get(key);
+                return key + "," + l.lat() + "," + l.lon() + "\n";
+              }).toList());
 
-    System.out.println("PAX data updated!");
+      System.out.println("PAX data updated!");
+      updateModel(set(model.isLoading, false));
+
+    }).start();
   }
 
   public Map<String, Location> initPaxLocations() {

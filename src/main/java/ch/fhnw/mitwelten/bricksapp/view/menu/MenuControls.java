@@ -20,18 +20,20 @@ import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class MenuControls extends BorderPane {
 
   private static final int DEFAULT_NODE_WIDTH = 125;
 
-  private Text             title;
-  private CheckBox         isSimulated;
-  private Button           addBrickBtn;
-  private Button           closeDialogBtn;
-  private TextField        lat;
-  private TextField        lon;
-  private ToggleGroup      brickTypeGroup;
+  private Text title;
+  private CheckBox isSimulated;
+  private CheckBox isOnMap;
+  private Button addBrickBtn;
+  private Button closeDialogBtn;
+  private TextField lat;
+  private TextField lon;
+  private ToggleGroup brickTypeGroup;
   private ComboBox<String> comboBox;
 
   private final ApplicationController controller;
@@ -41,25 +43,31 @@ public class MenuControls extends BorderPane {
 
   public MenuControls(ApplicationController controller, Runnable closeCallback) {
     this.controller = controller;
-    if(ids.isEmpty()) ids = controller.initIds();
-    if(paxLocations.isEmpty()) paxLocations = controller.initPaxLocations();
+    if (ids.isEmpty()) ids = controller.initIds();
+    if (paxLocations.isEmpty()) paxLocations = controller.initPaxLocations();
     initializeControls(closeCallback);
     layoutControls();
   }
 
   private void layoutControls() {
-    List<RadioButton> rbs = Arrays.stream(BrickType.values()).map(el -> {
-      RadioButton rb = new RadioButton(el.toString());
-      rb.setToggleGroup(brickTypeGroup);
-      rb.setUserData(el);
-      return rb;
+    List<RadioButton> rbs = Arrays.stream(BrickType.values()).map(brickType -> {
+      RadioButton radioBtn = new RadioButton(brickType.toString());
+      radioBtn.setToggleGroup(brickTypeGroup);
+      radioBtn.setUserData(brickType);
+      return radioBtn;
     }).toList();
 
     rbs.get(0).setSelected(true);
 
     VBox controls = new VBox(10.0);
     controls.getChildren().addAll(
-        new HBox(20.0, new Label("Simulated"), isSimulated),
+        new HBox(
+            20.0,
+            new Label("Simulated"),
+            isSimulated,
+            new Label("on Map"),
+            isOnMap
+        ),
         new Separator()
     );
     controls.getChildren().addAll(rbs);
@@ -77,7 +85,7 @@ public class MenuControls extends BorderPane {
     setTop(title);
     setBottom(new HBox(50.0, addBrickBtn, closeDialogBtn));
     setCenter(controls);
-    BorderPane.setMargin(controls, new Insets(12,12,12,12));
+    BorderPane.setMargin(controls, new Insets(12, 12, 12, 12));
     BorderPane.setAlignment(closeDialogBtn, Pos.BASELINE_RIGHT);
   }
 
@@ -87,53 +95,62 @@ public class MenuControls extends BorderPane {
     title.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
 
     closeDialogBtn = new Button("Close");
-    addBrickBtn    = new Button("Add");
-    isSimulated    = new CheckBox();
+    addBrickBtn = new Button("Add");
+    isSimulated = new CheckBox();
+    isOnMap = new CheckBox();
     brickTypeGroup = new ToggleGroup();
-    comboBox       = new ComboBox<>();
-    lat            = new TextField("0.0");
-    lon            = new TextField("0.0");
+    comboBox = new ComboBox<>();
+    lat = new TextField("0.0");
+    lon = new TextField("0.0");
 
-    comboBox.getItems().addAll(ids.get(BrickType.DISTANCE));
-    if (!comboBox.getItems().isEmpty()) comboBox.setValue(comboBox.getItems().get(0));
+    isOnMap.setDisable(true);
+
     comboBox.setEditable(true);
     comboBox.getValue();
+    addValuesToComboBox(ids.get(BrickType.DISTANCE));
 
     closeDialogBtn.setPrefWidth(DEFAULT_NODE_WIDTH);
-    addBrickBtn.setPrefWidth(DEFAULT_NODE_WIDTH);
+    addBrickBtn   .setPrefWidth(DEFAULT_NODE_WIDTH);
 
-    brickTypeGroup.selectedToggleProperty().addListener((_1, _2, newValue) -> {
+    brickTypeGroup.selectedToggleProperty().addListener((_1, _2, newActiveBrickType) -> {
       comboBox.getItems().clear();
-      comboBox.getItems().addAll(ids.get((BrickType) newValue.getUserData()));
-      comboBox.setValue(comboBox.getItems().get(0));
-      if(newValue.getUserData().equals(BrickType.PAX)) {
-        Location location = paxLocations.get(comboBox.getValue());
-        lat.setText(String.valueOf(location.lat()));
-        lon.setText(String.valueOf(location.lon()));
-      } else {
-        lat.setText("0.0");
-        lon.setText("0.0");
+      addValuesToComboBox(ids.get((BrickType) newActiveBrickType.getUserData()));
+
+      boolean isPaxActive = newActiveBrickType.getUserData().equals(BrickType.PAX);
+      Location newTextFieldLocation = new Location(0.0, 0.0);
+      if (isPaxActive) {
+        newTextFieldLocation = paxLocations.get(comboBox.getValue());
       }
+      setLocationTextFieldValues(newTextFieldLocation);
+      isOnMap.setDisable(!isPaxActive);
     });
 
     isSimulated.selectedProperty().addListener((_1, _2, newValue) ->
         comboBox.setDisable(newValue));
 
-    comboBox.getSelectionModel().selectedItemProperty().addListener((_1, _2, newValue) -> {
+    isOnMap.selectedProperty().addListener((_1, _2, isOnMapActive) -> {
+      Set<String> paxValues = ids.get(BrickType.PAX);
+      if (isOnMapActive) {
+         paxValues = paxLocations.keySet()
+            .stream()
+            .filter(key -> Util.locationOnMap(paxLocations.get(key)))
+            .collect(Collectors.toSet());
+      }
+      addValuesToComboBox(paxValues);
+    });
 
+    comboBox.getSelectionModel().selectedItemProperty().addListener((_1, _2, newValue) -> {
      if (brickTypeGroup.getSelectedToggle().getUserData().equals(BrickType.PAX)){
        if(newValue == null) return;
 
        Location location = paxLocations.getOrDefault(newValue, new Location(0.0, 0.0));
-       lat.setText(String.valueOf(location.lat()));
-       lon.setText(String.valueOf(location.lon()));
+       setLocationTextFieldValues(location);
       }
     });
 
     closeDialogBtn.setOnAction(e -> closeCallback.run());
     addBrickBtn.setOnAction(e -> {
       Location spawnLocation = paxLocations.getOrDefault(comboBox.getValue(), new Location(0.0, 0.0));
-      System.out.println(spawnLocation + "is on map: " + Util.locationOnMap(spawnLocation));
       if (Util.locationOnMap(spawnLocation)){
         spawnLocation = Util.fromCoordinates(spawnLocation);
       } else {
@@ -151,5 +168,18 @@ public class MenuControls extends BorderPane {
           }
         }
     );
+  }
+
+  private void setLocationTextFieldValues(Location location){
+    lat.setText(String.valueOf(location.lat()));
+    lon.setText(String.valueOf(location.lon()));
+  }
+
+  private void addValuesToComboBox(Set<String> values) {
+    comboBox.getItems().clear();
+    comboBox.getItems().addAll(values);
+    if (!comboBox.getItems().isEmpty()) {
+      comboBox.setValue(comboBox.getItems().get(0));
+    }
   }
 }

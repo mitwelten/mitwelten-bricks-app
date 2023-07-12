@@ -145,7 +145,7 @@ public abstract class BrickPlacement extends Group {
           Constants.WINDOW_WIDTH - (bp.getLayoutY() + offsetY), // mirroring the y-axis
           bp.getLayoutX() + offsetX
       );
-      controller.move(brickLocation,brickData);
+      controller.move(brickLocation, brickData);
     });
   }
 

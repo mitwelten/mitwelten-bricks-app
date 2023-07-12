@@ -10,10 +10,11 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.Region;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 
-public class BrickNode extends Group {
+public  class BrickNode extends Group {
 
   public static final double BRICK_HEIGHT  = 22;
   public static final double BRICK_WIDTH   = 34;
@@ -42,7 +43,8 @@ public class BrickNode extends Group {
   }
 
   private void layoutControls() {
-    this.getChildren().addAll(brickArea, frontIndicator ,body);
+    Circle c = new Circle(0.0, 0.0, 3, Color.RED);
+    this.getChildren().addAll(brickArea, frontIndicator ,body, c);
   }
 
   private void initializeControls() {
@@ -64,6 +66,5 @@ public class BrickNode extends Group {
 
     frontIndicator.setFill(Color.BLACK);
     body          .setFill(color);
-
   }
 }
