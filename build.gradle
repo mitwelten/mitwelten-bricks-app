@@ -19,6 +19,8 @@ dependencies {
 //    implementation group: 'com.neuronrobotics', name: 'nrjavaserial', version: '5.2.1'
 //    implementation group: 'com.eclipsesource.minimal-json', name: 'minimal-json', version: '0.9.5'
     implementation group: 'org.eclipse.paho', name: 'org.eclipse.paho.client.mqttv3', version: '1.2.5'
+
+    implementation group: 'org.json', name: 'json', version: '20230618'
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

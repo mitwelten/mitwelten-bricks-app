@@ -13,10 +13,19 @@ import ch.fhnw.mitwelten.bricksapp.model.brick.impl.ActuatorBrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.impl.SensorBrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.sensors.DistanceBrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.actuators.StepperBrickData;
+import ch.fhnw.mitwelten.bricksapp.util.ConfigIOHandler;
+import ch.fhnw.mitwelten.bricksapp.util.Constants;
 import ch.fhnw.mitwelten.bricksapp.util.Location;
 import ch.fhnw.mitwelten.bricksapp.util.Util;
 import ch.fhnw.mitwelten.bricksapp.util.mvcbase.ControllerBase;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
+import java.io.File;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.*;
 import java.util.function.BiConsumer;
 

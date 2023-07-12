@@ -60,7 +60,7 @@ public class MenuController extends ControllerBase<Garden> {
   private ActuatorBrickData addActuator(ActuatorBrickData brick) {
     var list = new ArrayList<>(model.actuators.getValue());
     Location spawnLocation = brick.location.getValue();
-    if(spawnLocation.lat() == 0 && spawnLocation.lon() == 0) spawnLocation = calcSpawnPosition(spiralValue++);
+    if(spawnLocation.lat() == 0.0 && spawnLocation.lon() == 0.0) spawnLocation = calcSpawnPosition(spiralValue++);
     list.add(brick);
     updateModel(
         set(model.actuators, list),
@@ -72,12 +72,18 @@ public class MenuController extends ControllerBase<Garden> {
 
   public void exportToFile(File file) {
     updateModel(set(model.isLoading, true));
-    boolean success = writeToFile(file,
-        Stream.concat(
-            model.actuators.getValue().stream(),
-            model.sensors.getValue().stream()
-        ).toList()
-    );
+    List<String> list =
+        new ArrayList<>(Stream.concat(
+                model.actuators.getValue().stream(),
+                model.sensors.getValue().stream())
+            .map(brick -> {
+              boolean type = brick.getID().contains("sim");
+              return String.valueOf(type).concat(",").concat(brick.toString());
+            })
+            .map(s -> s.concat("\n"))
+            .toList());
+    list.add(0, "sim,brick,id,lat,long,faceAngle\n");
+    boolean success = writeToFile(file, list);
     if(!success){
       createNotification.accept(NotificationType.ERROR, "Export config: Failed to export config!");
     }
@@ -105,8 +111,6 @@ public class MenuController extends ControllerBase<Garden> {
     );
     updateModel(set(model.isLoading, false));
   }
-
-
 
   private void importConfigFromList(List<String> lines) {
     lines.stream()

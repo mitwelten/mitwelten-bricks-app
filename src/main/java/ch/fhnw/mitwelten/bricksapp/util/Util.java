@@ -14,7 +14,6 @@ import static ch.fhnw.mitwelten.bricksapp.util.Constants.*;
 
 public class Util {
 
-
   /**
    * 0   45
    * | /
@@ -86,31 +85,20 @@ public class Util {
   public static Location toCoordinates(double x, double y) {
     double lon = (LEFT_LONG + ((RIGHT_LONG - LEFT_LONG) / WINDOW_WIDTH) * x);
     double lat = (BOTTOM_LAT + ((TOP_LAT - BOTTOM_LAT) / WINDOW_HEIGHT) * y);
-
-    double decimalFactor = 10e4;
-    double roundedLat = Math.round(lat * decimalFactor) / decimalFactor;
-    double roundedLon = Math.round(lon * decimalFactor) / decimalFactor;
-
-    return new Location(roundedLat, roundedLon);
+    return new Location(lat, lon);
   }
 
-//  public static Location fromLocation(Location location) {
-//    double lon = (LEFT_LONG + ((RIGHT_LONG - LEFT_LONG) / WINDOW_WIDTH) * x);
-//    double lat = (BOTTOM_LAT + ((TOP_LAT - BOTTOM_LAT) / WINDOW_HEIGHT) * y);
-//
-//    double decimalFactor = 10e4;
-//    double roundedLat = Math.round(lat * decimalFactor) / decimalFactor;
-//    double roundedLon = Math.round(lon * decimalFactor) / decimalFactor;
-//
-//    return new Location(roundedLat, roundedLon);
-//  }
+  public static Location fromCoordinates(Location location) {
+    double lon = (location.lon() - LEFT_LONG) / (RIGHT_LONG - LEFT_LONG) * WINDOW_WIDTH;
+    double lat = (location.lat() - BOTTOM_LAT) / (TOP_LAT - BOTTOM_LAT) * WINDOW_HEIGHT;
+    return new Location(lat, lon);
+  }
 
   public static String getTimeStamp() {
     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
     LocalDateTime now = LocalDateTime.now();
     return dtf.format(now);
   }
-
 
   public static Location calcSpawnPosition(double spiralValue) {
     // archimedic spiral formula: x(t) = at cos(t), y(t) = at sin(t)
@@ -120,5 +108,13 @@ public class Util {
     double x = a * t * Math.cos(t);
     double y = a * t * Math.sin(t);
     return new Location(x + offset, y + offset);
+  }
+
+  public static boolean locationOnMap(Location location){
+    boolean top    = location.lat() > TOP_LAT;
+    boolean bottom = location.lat() < BOTTOM_LAT;
+    boolean right  = location.lon() > RIGHT_LONG;
+    boolean left   = location.lon() < LEFT_LONG;
+    return !top && !bottom && !left && !right;
   }
 }
