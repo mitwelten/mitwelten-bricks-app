@@ -13,7 +13,6 @@ import ch.fhnw.mitwelten.bricksapp.model.brick.impl.ActuatorBrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.impl.SensorBrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.sensors.DistanceBrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.actuators.StepperBrickData;
-import ch.fhnw.mitwelten.bricksapp.util.Constants;
 import ch.fhnw.mitwelten.bricksapp.util.Location;
 import ch.fhnw.mitwelten.bricksapp.util.Util;
 import ch.fhnw.mitwelten.bricksapp.util.mvcbase.ControllerBase;
@@ -24,7 +23,7 @@ import java.util.function.BiConsumer;
 public class ProcessController extends ControllerBase<Garden> {
 
   private final ProxyGroup proxyGroup;
-  private DistanceBrickData mostActive;
+  private Location currentTarget;
   private final Runnable updateLoopThread;
   private final BiConsumer<NotificationType, String> createNotification;
 
@@ -51,22 +50,35 @@ public class ProcessController extends ControllerBase<Garden> {
 
         // update most active sensor (acts as target position)
         DistanceBrickData mostActiveSensor = updateMostActiveSensor(model.sensors.getValue());
-        mostActive = mostActiveSensor;
+        if (mostActiveSensor != null) {
+          currentTarget = mostActiveSensor.location.getValue();
+        }
 
         // update actuator target position
-        model.actuators.getValue().forEach(act -> {
+        if (currentTarget != null){
+          model.actuators.getValue().forEach(act -> {
+            double target = calcTargetPosition(act,  currentTarget);
+            act.setPosition((int) target);
+          });
+        }
 
-          // update only the actuators that have reached the last target value
-          if(act.getPosition() == act.getTargetPosition()){
-            setTargetPosition(act, mostActiveSensor == null ? Constants.MAP_MIDDLE : mostActiveSensor.location.getValue());
-          }
-        });
-        updateActuatorVisualization();
-
-        proxyGroup.waitForUpdate();
+        do {
+          proxyGroup.waitForUpdate();
+          updateActuatorVisualization();
+        } while (!allActuatorsReachedPosition());
       }
     });
     return updateLoopThread;
+  }
+
+
+  private boolean allActuatorsReachedPosition() {
+    boolean result = true;
+    List<ActuatorBrickData> allActuators = model.actuators.getValue();
+    for(ActuatorBrickData actuator : allActuators){
+      result = result && actuator.getPosition() == actuator.getTargetPosition();
+    }
+    return result;
   }
 
   private void updateActuatorVisualization() {
@@ -85,20 +97,17 @@ public class ProcessController extends ControllerBase<Garden> {
     if (maybeSensor.isPresent()){
       updateModel(set(maybeSensor.get().isMostActive, true));
       return maybeSensor.get();
-    } else {
-      return mostActive;
     }
+    return null;
   }
 
-  private void setTargetPosition(ActuatorBrickData actuator, Location mostActiveLocation) {
+  private double calcTargetPosition(ActuatorBrickData actuator, Location mostActiveLocation) {
     Location actuatorLocation = actuator.location.getValue();
 
     double dLat   = mostActiveLocation.lat() - actuatorLocation.lat();
     double dLong  = mostActiveLocation.lon() - actuatorLocation.lon();
     double angle  = Util.calcAngle(dLong, dLat);
-    double target = Util.absolutToRelativ(actuator, angle);
-
-    actuator.setPosition((int) target);
+    return Util.absolutToRelativ(actuator, angle);
   }
 
   public void move(Location target, BrickData brick){
