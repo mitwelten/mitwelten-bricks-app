@@ -23,8 +23,10 @@ import java.util.function.BiConsumer;
 public class ProcessController extends ControllerBase<Garden> {
 
   private final ProxyGroup proxyGroup;
+  private final Runnable   updateLoopThread;
+
   private Location currentTarget;
-  private final Runnable updateLoopThread;
+
   private final BiConsumer<NotificationType, String> createNotification;
 
   public ProcessController(Garden model, BiConsumer<NotificationType, String> createNotification) {

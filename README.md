@@ -2,7 +2,7 @@
 
 ## About the Project
 This project is used to test scenarios with distributed sensors and actuators. Therefore, the sensors and actuators communicate either via the Internet with the application or are simulated by it. The goal is to create a test environment to develop algorithms, such as for a guidance system.
-![screenshot](./src/main/resources/app-screenshot.png)
+![screenshot](./docs/app-screenshot.png)
 
 ### Built With
 The following technologies were used for the implementation of the project:
