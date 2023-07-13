@@ -58,7 +58,7 @@ public abstract class BrickPlacement extends BrickNode {
     Region labelBackground = new Region();
     labelBackground.setMinHeight(100);
     labelBackground.setMinWidth(105);
-    labelBackground.relocate(-5, -15);
+    labelBackground.relocate(-10, -15);
     labelBackground.setBackground(
         new Background(
             new BackgroundFill(Color.rgb(255,255,255, 0.5), new CornerRadii(5), null)
@@ -68,7 +68,7 @@ public abstract class BrickPlacement extends BrickNode {
     label.setFont(Font.font("SourceCodePro", FontWeight.NORMAL, 12));
 
     labelGroup = labelHook(new Pane(labelBackground, label));
-    labelGroup.relocate(BrickNode.SYMBOL_WIDTH / 2 + 10, 0);
+    labelGroup.relocate(BrickNode.SYMBOL_WIDTH / 2 + 5, 3);
 
     cross = new Group();
     Line line1 = createCrossLine(false);
