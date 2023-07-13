@@ -23,7 +23,7 @@ import ch.fhnw.mitwelten.bricksapp.util.Location;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-public abstract class BrickPlacement extends Group {
+public abstract class BrickPlacement extends BrickNode {
 
   protected Group cross;
   private Text    label;
@@ -34,8 +34,8 @@ public abstract class BrickPlacement extends Group {
 
   protected double faceAngle;
 
-  public BrickPlacement(ApplicationController controller, BrickData brick, Runnable removeMe) {
-    super();
+  public BrickPlacement(ApplicationController controller, BrickData brick, Runnable removeMe, Color color) {
+    super(color);
     this.controller = controller;
     this.brickData  = brick;
     initializeControls(removeMe);
@@ -68,7 +68,7 @@ public abstract class BrickPlacement extends Group {
     label.setFont(Font.font("SourceCodePro", FontWeight.NORMAL, 12));
 
     labelGroup = labelHook(new Pane(labelBackground, label));
-    labelGroup.relocate(BrickNode.BRICK_WIDTH + 15, -BrickNode.BRICK_HEIGHT + 30);
+    labelGroup.relocate(BrickNode.SYMBOL_WIDTH / 2 + 10, 0);
 
     cross = new Group();
     Line line1 = createCrossLine(false);
@@ -77,7 +77,7 @@ public abstract class BrickPlacement extends Group {
     crossCircle.setStrokeWidth(1);
     crossCircle.setFill(Color.rgb(255,0,0, 1));
     cross.getChildren().addAll(crossCircle, line1, line2);
-    cross.relocate(30,-15);
+    cross.relocate(20,-25);
 
     cross.setOnMouseClicked(e -> {
       if(e.isShiftDown()){
@@ -97,18 +97,14 @@ public abstract class BrickPlacement extends Group {
 
   public abstract BrickData getBrick();
 
-  public abstract void setRotateBrickSymbol(double angel);
-
   private void initializeMouseListeners() {
     addDragNDropSupport();
 
     this.setOnMouseEntered(event -> {
-      this.toFront();
-      // super.getChildren().addAll(labelBackground, label);
       super.getChildren().addAll(labelGroup);
+      labelGroup.toBack();
     });
     this.setOnMouseExited (event -> super.getChildren().removeAll(labelGroup));
-//    this.setOnMouseExited (event -> super.getChildren().removeAll(labelBackground, label));
 
     this.setOnScroll( e -> {
       int dAngle = 0;

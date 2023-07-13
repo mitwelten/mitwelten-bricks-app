@@ -26,12 +26,13 @@ public class StepperPlacement extends ActuatorPlacement {
   private final StepperBrickData brick;
   private final ApplicationController controller;
 
-  private Group stepperShape;
+  private Group  stepperShape;
   private Rotate mostActiveSensorAngle;
   private Rotate frontViewAngle;
+  private Rotate brickRotation;
 
   public StepperPlacement(ApplicationController controller, ActuatorBrickData brick) {
-    super(controller, brick, () -> controller.removeBrick(brick));
+    super(controller, brick, () -> controller.removeBrick(brick), Color.BLUE);
     this.brick = (StepperBrickData) brick;
     this.controller = controller;
 
@@ -43,6 +44,7 @@ public class StepperPlacement extends ActuatorPlacement {
     final double outerCircleRadius = ((BrickNode.SYMBOL_HEIGHT - BrickNode.BRICK_HEIGHT) / 2) + 3;
     final double innerCircleRadius = outerCircleRadius - 6;
 
+    brickRotation         = new Rotate(0.0, BrickNode.CENTER_X, BrickNode.CENTER_Y);
     mostActiveSensorAngle = new Rotate();
     frontViewAngle        = new Rotate();
     Line mostActiveSensorIndicator = createLine(outerCircleRadius, mostActiveSensorAngle);
@@ -55,16 +57,14 @@ public class StepperPlacement extends ActuatorPlacement {
     innerCircle.setStroke(Color.BLACK);
     outerCircle.setStroke(Color.BLACK);
 
-    BrickNode brickIcon   = new BrickNode(Color.BLUE);
-
     stepperShape = new Group(
-        brickIcon,
         outerCircle,
         mostActiveSensorIndicator,
         innerCircle,
         frontViewIndicator
     );
     stepperShape.setRotate(faceAngle);
+    stepperShape.getTransforms().add(brickRotation);
   }
 
   @Override
@@ -98,8 +98,9 @@ public class StepperPlacement extends ActuatorPlacement {
     return indicator;
   }
 
-  public void setRotateBrickSymbol(double angel){
-    stepperShape.setRotate(angel);
+  public void setRotateBrickSymbol(double angle){
+    brickRotation.setAngle(angle);
+    super.setRotateBrickSymbol(angle);
   }
 
   public void setTargetValue(double angle) {

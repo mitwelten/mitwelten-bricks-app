@@ -15,7 +15,9 @@ import javafx.scene.Group;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Arc;
 import javafx.scene.shape.ArcType;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.StrokeType;
+import javafx.scene.transform.Rotate;
 
 import java.util.Objects;
 
@@ -25,11 +27,12 @@ public class DistancePlacement extends SensorPlacement {
   private final DistanceBrickData brick;
 
   private Group     distanceShape;
-  private BrickNode brickIcon;
   private Arc       sensorActivity;
+  private Rectangle highlightBorder;
+  private Rotate    brickRotation;
 
   public DistancePlacement(ApplicationController controller, SensorBrickData brick) {
-    super(controller, brick, () -> controller.removeBrick(brick));
+    super(controller, brick, () -> controller.removeBrick(brick), Color.RED);
     this.brick = (DistanceBrickData) brick;
     initializeControls();
     layoutControls();
@@ -37,28 +40,42 @@ public class DistancePlacement extends SensorPlacement {
 
   public void setHighlighted(boolean isHighlighted) {
     if (isHighlighted) {
-      brickIcon.getBody().setStrokeType(StrokeType.INSIDE);
-      brickIcon.getBody().setStroke(Color.YELLOW);
+      highlightBorder.setStrokeType(StrokeType.INSIDE);
+      highlightBorder.setStroke(Color.YELLOW);
     } else {
-      brickIcon.getBody().setStrokeType(StrokeType.INSIDE);
-      brickIcon.getBody().setStroke(null);
+      highlightBorder.setStrokeType(StrokeType.INSIDE);
+      highlightBorder.setStroke(null);
     }
   }
 
   private void initializeControls() {
-    brickIcon = new BrickNode(Color.RED);
-
     Arc viewPort   = createViewPortArc(VIEW_PORT_RADIUS, Color.grayRgb(100, 0.7));
     sensorActivity = createViewPortArc(0.0,              Color.rgb(205, 205, 0, 0.4));
 
-    distanceShape = new Group(viewPort, sensorActivity, brickIcon);
+    highlightBorder= new Rectangle(
+        CENTER_Y - BRICK_WIDTH / 2,
+        CENTER_X - BRICK_HEIGHT / 2,
+        BRICK_WIDTH,
+        BRICK_HEIGHT
+    );
+    highlightBorder.setArcHeight(BRICK_RADIUS);
+    highlightBorder.setArcWidth (BRICK_RADIUS);
+    highlightBorder.setStrokeWidth(1.5);
+    highlightBorder.setFill(Color.TRANSPARENT);
+    highlightBorder.setStroke(null);
+
+    distanceShape = new Group(viewPort, sensorActivity);
     distanceShape.setRotate(faceAngle);
+
+    brickRotation = new Rotate(0.0, BrickNode.CENTER_X, BrickNode.CENTER_Y);
+    distanceShape  .getTransforms().add(brickRotation);
+    highlightBorder.getTransforms().add(brickRotation);
   }
 
   private Arc createViewPortArc(double radius, Color color) {
     Arc arc = new Arc(
-        BrickNode.CENTER_X,
-        15,
+        CENTER_X,
+        -5,
         radius,
         radius,
         45.0,
@@ -69,12 +86,15 @@ public class DistancePlacement extends SensorPlacement {
     return arc;
   }
 
-  public void setRotateBrickSymbol(double angel){
-    distanceShape.setRotate(angel);
+  private void layoutControls() {
+//    distanceShape.relocate(-BrickNode.SYMBOL_WIDTH / 2, -BrickNode.SYMBOL_HEIGHT / 2);
+    super.getChildren().addAll(distanceShape, highlightBorder);
+    distanceShape.toBack();
   }
 
-  private void layoutControls() {
-    super.getChildren().addAll(distanceShape);
+  public void setRotateBrickSymbol(double angle){
+    brickRotation.setAngle(angle);
+    super.setRotateBrickSymbol(angle);
   }
 
   @Override

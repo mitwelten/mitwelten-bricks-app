@@ -95,13 +95,13 @@ public class MenuControls extends BorderPane {
     title.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
 
     closeDialogBtn = new Button("Close");
-    addBrickBtn = new Button("Add");
-    isSimulated = new CheckBox();
-    isOnMap = new CheckBox();
+    addBrickBtn    = new Button("Add");
+    isSimulated    = new CheckBox();
+    isOnMap        = new CheckBox();
     brickTypeGroup = new ToggleGroup();
-    comboBox = new ComboBox<>();
-    lat = new TextField("0.0");
-    lon = new TextField("0.0");
+    comboBox       = new ComboBox<>();
+    lat            = new TextField("0.0");
+    lon            = new TextField("0.0");
 
     isOnMap.setDisable(true);
 
@@ -125,8 +125,10 @@ public class MenuControls extends BorderPane {
       isOnMap.setDisable(!isPaxActive);
     });
 
-    isSimulated.selectedProperty().addListener((_1, _2, newValue) ->
-        comboBox.setDisable(newValue));
+    isSimulated.selectedProperty().addListener((_1, _2, newValue) -> {
+      isOnMap.setDisable(newValue);
+      comboBox.setDisable(newValue);
+    });
 
     isOnMap.selectedProperty().addListener((_1, _2, isOnMapActive) -> {
       Set<String> paxValues = ids.get(BrickType.PAX);

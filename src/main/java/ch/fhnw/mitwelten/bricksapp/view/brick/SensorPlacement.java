@@ -7,11 +7,12 @@ package ch.fhnw.mitwelten.bricksapp.view.brick;
 
 import ch.fhnw.mitwelten.bricksapp.controller.ApplicationController;
 import ch.fhnw.mitwelten.bricksapp.model.brick.impl.SensorBrickData;
+import javafx.scene.paint.Color;
 
 public abstract class SensorPlacement extends BrickPlacement {
 
-  public SensorPlacement(ApplicationController controller, SensorBrickData brick, Runnable removeMe) {
-    super(controller, brick, removeMe);
+  public SensorPlacement(ApplicationController controller, SensorBrickData brick, Runnable removeMe, Color color) {
+    super(controller, brick, removeMe, color);
   }
 
   public abstract SensorBrickData getBrick();
