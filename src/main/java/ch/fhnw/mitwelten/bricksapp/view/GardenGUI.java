@@ -85,7 +85,7 @@ public class GardenGUI extends Pane implements ViewMixin<Garden, ApplicationCont
   @Override
   public void setupModelToUiBindings(Garden model) {
     onChangeOf(model.isLoading).execute((oldValue, newValue) -> {
-      if (newValue) {
+      if (newValue && !this.getChildren().contains(spinner)) {
         this.getChildren().add(spinner);
         return;
       }

@@ -23,6 +23,8 @@ import ch.fhnw.mitwelten.bricksapp.view.background.Grid;
 import ch.fhnw.mitwelten.bricksapp.view.menu.MenuBar;
 
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -163,7 +165,20 @@ public class AppStarter extends Application {
     background.setBackground(new Background(bgImages.toArray(new BackgroundImage[0])));
   }
 
+  private static void checkInternetConnection(){
+    // based on: https://www.tutorialspoint.com/Checking-internet-connectivity-in-Java
+    try {
+      URL url = new URL("http://www.google.com");
+      URLConnection connection = url.openConnection();
+      connection.connect();
+      System.out.println("Internet Connection: OK");
+    } catch (IOException e) {
+      System.err.println("Internet Connection: Failed");
+    }
+  }
+
   public static void main(String[] args) {
+    checkInternetConnection();
     launch(args);
   }
 }

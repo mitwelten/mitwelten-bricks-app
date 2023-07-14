@@ -6,12 +6,16 @@
 package ch.fhnw.mitwelten.bricksapp.util;
 
 import java.io.*;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class ConfigIOHandler {
+public class IOHandler {
 
   public static boolean writeToFile(File file, List<String> bricks) {
     try (PrintWriter printWriter = new PrintWriter(file)) {
@@ -40,5 +44,15 @@ public class ConfigIOHandler {
       return Optional.empty();
     }
     return Optional.of(allLines);
+  }
+
+  public static String jsonFromUrl(String url, String id) {
+    HttpClient client = HttpClient.newHttpClient();
+    HttpRequest request = HttpRequest.newBuilder()
+        .uri(URI.create(url + id))
+        .build();
+    return client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+        .thenApply(HttpResponse::body)
+        .join();
   }
 }

@@ -9,18 +9,14 @@ import ch.fhnw.mitwelten.bricksapp.model.BrickType;
 import ch.fhnw.mitwelten.bricksapp.model.Garden;
 import ch.fhnw.mitwelten.bricksapp.model.Notification.NotificationType;
 import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
-import ch.fhnw.mitwelten.bricksapp.util.ConfigIOHandler;
 import ch.fhnw.mitwelten.bricksapp.util.Constants;
+import ch.fhnw.mitwelten.bricksapp.util.IOHandler;
 import ch.fhnw.mitwelten.bricksapp.util.Location;
 import ch.fhnw.mitwelten.bricksapp.util.mvcbase.ControllerBase;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -39,6 +35,8 @@ public class MetaDataController extends ControllerBase<Garden> {
     super(model);
     this.createNotification = createNotification;
     this.ids = new HashSet<>();
+    File paxLocationFile = new File(Constants.FILE_LOCATION_PATH + "paxLocation");
+    isFileDataOutdated(paxLocationFile);
   }
 
   public boolean isValidId(String id) {
@@ -84,18 +82,19 @@ public class MetaDataController extends ControllerBase<Garden> {
   }
 
   private Set<String> loadIds(String fileName) {
-    File file = new File(Constants.ID_PATH + fileName);
+    File file = new File(Constants.FILE_ID_PATH + fileName);
     // if file older than 1h
-    if(BrickType.PAX.toString().equals(fileName)) isPaxDataOutdated(file);
+    if(BrickType.PAX.toString().equals(fileName)) isFileDataOutdated(file);
 
-    Optional<List<String>> result = ConfigIOHandler.readFromFile(file);
+    Optional<List<String>> result = IOHandler.readFromFile(file);
     if(result.isPresent()) {
       return new TreeSet<>(result.get());
     }
     return Collections.emptySet();
   }
 
-  private void isPaxDataOutdated(File file) {
+  // is called from ctor and GUI
+  private synchronized void isFileDataOutdated(File file) {
     if (System.currentTimeMillis() - file.lastModified() > 3.6e6) {
       refreshPaxData();
     }
@@ -104,42 +103,38 @@ public class MetaDataController extends ControllerBase<Garden> {
   private void refreshPaxData() {
     System.out.println("Updating PAX data...");
     updateModel(set(model.isLoading, true));
+
     new Thread(() -> {
 
       List<String> allNodeLabels = new ArrayList<>(Collections.emptyList());
       Map<String, Location> paxLocations = new HashMap<>(Collections.emptyMap());
-      String allJsonIds = jsonFromUrl(PAX_LOCATION_URL,"");
+      String allJsonIds = IOHandler.jsonFromUrl(PAX_LOCATION_URL,"");
       JSONArray allIds = new JSONArray(allJsonIds);
 
       for (int i = 0; i < allIds.length(); i++) {
         JSONObject deployment = allIds.getJSONObject(i);
         int deployment_id = deployment.getInt("deployment_id");
-        String deploymentDatas = jsonFromUrl(PAX_DEPLOYMENT_URL, String.valueOf(deployment_id));
-
+        String deploymentDatas = IOHandler.jsonFromUrl(PAX_DEPLOYMENT_URL, String.valueOf(deployment_id));
         try {
           String nodeLabel = new JSONObject(deploymentDatas).getJSONObject("node").getString("node_label");
           allNodeLabels.add(nodeLabel);
           try {
             JSONObject location = new JSONObject(deploymentDatas).getJSONObject("location");
-            double lat = location.getDouble("lat");
-            double lon = location.getDouble("lon");
-            paxLocations.put(nodeLabel, new Location(lat, lon));
+            paxLocations.put(nodeLabel, new Location(location.getDouble("lat"), location.getDouble("lon")));
           } catch(Exception e){
-            System.err.println("Could not fetch Location deployment data!");
-            System.err.println("message: " + e.getMessage());
+            System.err.println("Could not fetch deployment location data!\n" + e.getMessage());
           }
         } catch(Exception e){
-          System.err.println("Could not fetch PAX deployment data!");
-          System.err.println("message: " + e.getMessage());
+          System.err.println("Could not fetch PAX deployment data!\n" + e.getMessage());
         }
       }
 
-      ConfigIOHandler.writeToFile(
-          new File(Constants.ID_PATH + "Pax"),
+      IOHandler.writeToFile(
+          new File(Constants.FILE_ID_PATH + "Pax"),
           allNodeLabels.stream().map(s -> s + "\n").toList()
       );
 
-      ConfigIOHandler.writeToFile(new File(Constants.LOCATION_PATH + "paxLocation"),
+      IOHandler.writeToFile(new File(Constants.FILE_LOCATION_PATH + "paxLocation"),
           paxLocations.keySet()
               .stream()
               .map(key -> {
@@ -155,10 +150,10 @@ public class MetaDataController extends ControllerBase<Garden> {
 
   public Map<String, Location> initPaxLocations() {
     Map<String, Location> resultMap = Collections.emptyMap();
-    File locationFile = new File(Constants.LOCATION_PATH + "paxLocation");
+    File locationFile = new File(Constants.FILE_LOCATION_PATH + "paxLocation");
     if (!locationFile.exists()) refreshPaxData();
 
-    Optional<List<String>> content = ConfigIOHandler.readFromFile(locationFile);
+    Optional<List<String>> content = IOHandler.readFromFile(locationFile);
     if(content.isPresent()){
       resultMap = content.get().stream()
           .map(line -> line.split(","))
@@ -167,15 +162,5 @@ public class MetaDataController extends ControllerBase<Garden> {
               words -> new Location(Double.parseDouble(words[1]), Double.parseDouble(words[2]))));
     }
     return resultMap;
-  }
-
-  private String jsonFromUrl(String url, String id) {
-    HttpClient client = HttpClient.newHttpClient();
-    HttpRequest request = HttpRequest.newBuilder()
-        .uri(URI.create(url + id))
-        .build();
-    return client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-        .thenApply(HttpResponse::body)
-        .join();
   }
 }

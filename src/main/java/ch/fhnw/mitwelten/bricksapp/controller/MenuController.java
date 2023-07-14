@@ -30,8 +30,8 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
-import static ch.fhnw.mitwelten.bricksapp.util.ConfigIOHandler.readFromFile;
-import static ch.fhnw.mitwelten.bricksapp.util.ConfigIOHandler.writeToFile;
+import static ch.fhnw.mitwelten.bricksapp.util.IOHandler.readFromFile;
+import static ch.fhnw.mitwelten.bricksapp.util.IOHandler.writeToFile;
 import static ch.fhnw.mitwelten.bricksapp.util.Util.calcSpawnPosition;
 
 public class MenuController extends ControllerBase<Garden> {

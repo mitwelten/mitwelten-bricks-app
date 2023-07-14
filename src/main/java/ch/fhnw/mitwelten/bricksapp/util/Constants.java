@@ -20,9 +20,9 @@ public class Constants {
 
   public static final String BASE_URL = "brick.li/";
 
-  public static final String CSV_PATH      = "src/main/resources/";
-  public static final String ID_PATH       = "src/main/resources/bricks/id/";
-  public static final String LOCATION_PATH = "src/main/resources/bricks/location/";
+  public static final String CSV_PATH           = "src/main/resources/";
+  public static final String FILE_ID_PATH       = "src/main/resources/bricks/id/";
+  public static final String FILE_LOCATION_PATH = "src/main/resources/bricks/location/";
 
   public static final String SIM_ID_PREFIX  = "(sim): ";
   public static final String MQTT_ID_PREFIX = "(mqtt): ";
