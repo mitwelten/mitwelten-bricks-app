@@ -9,15 +9,17 @@ import ch.fhnw.imvs.bricks.core.ProxyGroup;
 import ch.fhnw.mitwelten.bricksapp.model.Garden;
 import ch.fhnw.mitwelten.bricksapp.model.Notification.NotificationType;
 import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
+import ch.fhnw.mitwelten.bricksapp.model.brick.actuators.StepperBrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.impl.ActuatorBrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.impl.SensorBrickData;
 import ch.fhnw.mitwelten.bricksapp.model.brick.sensors.DistanceBrickData;
-import ch.fhnw.mitwelten.bricksapp.model.brick.actuators.StepperBrickData;
 import ch.fhnw.mitwelten.bricksapp.util.Location;
 import ch.fhnw.mitwelten.bricksapp.util.Util;
 import ch.fhnw.mitwelten.bricksapp.util.mvcbase.ControllerBase;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 public class ProcessController extends ControllerBase<Garden> {

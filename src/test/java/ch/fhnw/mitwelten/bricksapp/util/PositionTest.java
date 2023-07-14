@@ -11,7 +11,6 @@ public class PositionTest {
 
   @Test
   public void testTypicalPointsInEachQuadrant() {
-
     assertEquals( 90 - 45, calcAngle( 5.0,  5.0), PRECISION, "first");
     assertEquals(360 - 45, calcAngle(-5.0,  5.0), PRECISION, "second");
     assertEquals(180 + 45, calcAngle(-5.0, -5.0), PRECISION, "third");
@@ -43,5 +42,19 @@ public class PositionTest {
     assertEquals(180, calcAngle( 0.0, -5.0), PRECISION, "south"); // -90
     assertEquals( 90, calcAngle( 5.0,  0.0), PRECISION, "east"); // 0
     assertEquals(270, calcAngle(-5.0,  0.0), PRECISION, "west"); // 0
+  }
+
+
+
+
+  @Test
+  public void testFromToCoordinates() {
+    double x = 12.0;
+    double y = 7.0;
+    Location testLocation1 = Util.toCoordinates(x, y);
+    Location testLocation2 = Util.fromCoordinates(testLocation1);
+
+    assertEquals(testLocation2.lat(), x, PRECISION, "from to lat"); // 90
+    assertEquals(testLocation2.lon(), y, PRECISION, "from to lon"); // 90
   }
 }

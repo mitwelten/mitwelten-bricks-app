@@ -7,8 +7,8 @@ package ch.fhnw.mitwelten.bricksapp.view.menu;
 
 import ch.fhnw.mitwelten.bricksapp.controller.ApplicationController;
 import ch.fhnw.mitwelten.bricksapp.model.BrickType;
-import ch.fhnw.mitwelten.bricksapp.util.ConfigIOHandler;
-import ch.fhnw.mitwelten.bricksapp.util.Constants;
+import ch.fhnw.mitwelten.bricksapp.util.Location;
+import ch.fhnw.mitwelten.bricksapp.util.Util;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
@@ -19,78 +19,73 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 
-import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class MenuControls extends BorderPane {
 
   private static final int DEFAULT_NODE_WIDTH = 125;
 
-  private Text             title;
-  private Label            lblId;
-  private Label            lblSimulated;
-  private CheckBox         isSimulated;
-  private Button           addBrickBtn;
-  private Button           closeDialogBtn;
-  private ToggleGroup      brickTypeGroup;
+  private Text title;
+  private CheckBox isSimulated;
+  private CheckBox isOnMap;
+  private Button addBrickBtn;
+  private Button closeDialogBtn;
+  private TextField lat;
+  private TextField lon;
+  private ToggleGroup brickTypeGroup;
   private ComboBox<String> comboBox;
 
   private final ApplicationController controller;
 
   private Map<BrickType, Set<String>> ids = new HashMap<>();
+  private Map<String, Location> paxLocations = new HashMap<>();
 
   public MenuControls(ApplicationController controller, Runnable closeCallback) {
     this.controller = controller;
-    initIds();
+    if (ids.isEmpty()) ids = controller.initIds();
+    if (paxLocations.isEmpty()) paxLocations = controller.initPaxLocations();
     initializeControls(closeCallback);
     layoutControls();
   }
 
-  private void initIds() {
-    if(ids == null || ids.isEmpty()){
-      ids = Map.of(
-          BrickType.PAX,      loadIds("paxId"),
-          BrickType.STEPPER,  loadIds("stepperId"),
-          BrickType.DISTANCE, loadIds("distanceId")
-      );
-    }
-  }
-
-  private Set<String> loadIds(String fileName) {
-    File file = new File(Constants.PAX_ID_PATH + fileName);
-    Optional<List<String>> result = ConfigIOHandler.readFromFile(file);
-    if(result.isPresent()) {
-      return new TreeSet<>(result.get());
-    }
-    return Collections.emptySet();
-  }
-
   private void layoutControls() {
-    List<RadioButton> rbs = Arrays.stream(BrickType.values()).map(el -> {
-      RadioButton rb = new RadioButton(el.toString());
-      rb.setToggleGroup(brickTypeGroup);
-      rb.setUserData(el);
-      return rb;
+    List<RadioButton> rbs = Arrays.stream(BrickType.values()).map(brickType -> {
+      RadioButton radioBtn = new RadioButton(brickType.toString());
+      radioBtn.setToggleGroup(brickTypeGroup);
+      radioBtn.setUserData(brickType);
+      return radioBtn;
     }).toList();
 
     rbs.get(0).setSelected(true);
 
     VBox controls = new VBox(10.0);
     controls.getChildren().addAll(
-        new HBox(20.0, lblSimulated, isSimulated),
+        new HBox(
+            20.0,
+            new Label("Simulated"),
+            isSimulated,
+            new Label("on Map"),
+            isOnMap
+        ),
         new Separator()
     );
     controls.getChildren().addAll(rbs);
     controls.getChildren().addAll(
         new Separator(),
-        new HBox(20.0, lblId, comboBox)
+        new HBox(20.0, new Label("ID"), comboBox)
+    );
+    controls.getChildren().addAll(
+        new Separator(),
+        new HBox(20.0, new Label("lat\t"), lat),
+        new HBox(20.0, new Label("lon\t"), lon)
     );
 
     setPadding(new Insets(25, 25, 25, 25));
     setTop(title);
     setBottom(new HBox(50.0, addBrickBtn, closeDialogBtn));
     setCenter(controls);
-    BorderPane.setMargin(controls, new Insets(12,12,12,12));
+    BorderPane.setMargin(controls, new Insets(12, 12, 12, 12));
     BorderPane.setAlignment(closeDialogBtn, Pos.BASELINE_RIGHT);
   }
 
@@ -101,42 +96,92 @@ public class MenuControls extends BorderPane {
 
     closeDialogBtn = new Button("Close");
     addBrickBtn    = new Button("Add");
-    lblId          = new Label("ID");
-    lblSimulated   = new Label("Simulated");
     isSimulated    = new CheckBox();
+    isOnMap        = new CheckBox();
     brickTypeGroup = new ToggleGroup();
     comboBox       = new ComboBox<>();
+    lat            = new TextField("0.0");
+    lon            = new TextField("0.0");
 
-    comboBox.getItems().addAll(ids.get(BrickType.DISTANCE));
-    comboBox.setValue(comboBox.getItems().get(0));
+    isOnMap.setDisable(true);
+
     comboBox.setEditable(true);
     comboBox.getValue();
+    addValuesToComboBox(ids.get(BrickType.DISTANCE));
 
     closeDialogBtn.setPrefWidth(DEFAULT_NODE_WIDTH);
-    addBrickBtn.setPrefWidth(DEFAULT_NODE_WIDTH);
+    addBrickBtn   .setPrefWidth(DEFAULT_NODE_WIDTH);
 
-    brickTypeGroup.selectedToggleProperty().addListener((_1, _2, newValue) -> {
+    brickTypeGroup.selectedToggleProperty().addListener((_1, _2, newActiveBrickType) -> {
       comboBox.getItems().clear();
-      comboBox.getItems().addAll(ids.get((BrickType) newValue.getUserData()));
-      comboBox.setValue(comboBox.getItems().get(0));
+      addValuesToComboBox(ids.get((BrickType) newActiveBrickType.getUserData()));
+
+      boolean isPaxActive = newActiveBrickType.getUserData().equals(BrickType.PAX);
+      Location newTextFieldLocation = new Location(0.0, 0.0);
+      if (isPaxActive) {
+        newTextFieldLocation = paxLocations.get(comboBox.getValue());
+      }
+      setLocationTextFieldValues(newTextFieldLocation);
+      isOnMap.setDisable(!isPaxActive);
     });
 
     isSimulated.selectedProperty().addListener((_1, _2, newValue) -> {
+      isOnMap.setDisable(newValue);
       comboBox.setDisable(newValue);
+    });
+
+    isOnMap.selectedProperty().addListener((_1, _2, isOnMapActive) -> {
+      Set<String> paxValues = ids.get(BrickType.PAX);
+      if (isOnMapActive) {
+         paxValues = paxLocations.keySet()
+            .stream()
+            .filter(key -> Util.locationOnMap(paxLocations.get(key)))
+            .collect(Collectors.toSet());
+      }
+      addValuesToComboBox(paxValues);
+    });
+
+    comboBox.getSelectionModel().selectedItemProperty().addListener((_1, _2, newValue) -> {
+     if (brickTypeGroup.getSelectedToggle().getUserData().equals(BrickType.PAX)){
+       if(newValue == null) return;
+
+       Location location = paxLocations.getOrDefault(newValue, new Location(0.0, 0.0));
+       setLocationTextFieldValues(location);
+      }
     });
 
     closeDialogBtn.setOnAction(e -> closeCallback.run());
     addBrickBtn.setOnAction(e -> {
+      Location spawnLocation = paxLocations.getOrDefault(comboBox.getValue(), new Location(0.0, 0.0));
+      if (Util.locationOnMap(spawnLocation)){
+        spawnLocation = Util.fromCoordinates(spawnLocation);
+      } else {
+        spawnLocation = new Location(0.0, 0.0);
+      }
+
       String brickId = isSimulated.isSelected() ? controller.getSimulatedId() : comboBox.getValue();
           if (!controller.isIdAssigned(brickId)) {
             controller.addBrick(
                 isSimulated.isSelected(),
                 (BrickType) brickTypeGroup.getSelectedToggle().getUserData(),
+                spawnLocation,
                 brickId
             );
           }
         }
     );
+  }
 
+  private void setLocationTextFieldValues(Location location){
+    lat.setText(String.valueOf(location.lat()));
+    lon.setText(String.valueOf(location.lon()));
+  }
+
+  private void addValuesToComboBox(Set<String> values) {
+    comboBox.getItems().clear();
+    comboBox.getItems().addAll(values);
+    if (!comboBox.getItems().isEmpty()) {
+      comboBox.setValue(comboBox.getItems().get(0));
+    }
   }
 }

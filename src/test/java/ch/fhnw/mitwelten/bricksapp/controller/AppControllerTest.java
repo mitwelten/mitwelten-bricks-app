@@ -43,7 +43,7 @@ public class AppControllerTest {
     ApplicationController controller = new ApplicationController(model);
 
     //when
-    DistanceBrickData brick = (DistanceBrickData) controller.addBrick(true, BrickType.DISTANCE, "");
+    DistanceBrickData brick = (DistanceBrickData) controller.addBrick(true, BrickType.DISTANCE, new Location(0.0, 0.0), "");
     controller.awaitCompletion();
 
     //then
@@ -65,7 +65,7 @@ public class AppControllerTest {
     ApplicationController controller = new ApplicationController(model);
 
     //when
-    StepperBrickData brick = (StepperBrickData) controller.addBrick(true, BrickType.STEPPER, "");
+    StepperBrickData brick = (StepperBrickData) controller.addBrick(true, BrickType.STEPPER, new Location(0.0, 0.0), "");
     controller.awaitCompletion();
 
     //then
@@ -85,8 +85,8 @@ public class AppControllerTest {
     //given
     Garden model = new Garden();
     ApplicationController controller = new ApplicationController(model);
-    StepperBrickData stepper   = (StepperBrickData) controller.addBrick(true, BrickType.STEPPER, "");
-    DistanceBrickData distance = (DistanceBrickData) controller.addBrick(true, BrickType.DISTANCE, "");
+    StepperBrickData stepper   = (StepperBrickData) controller.addBrick (true, BrickType.STEPPER, new Location(0.0, 0.0), "");
+    DistanceBrickData distance = (DistanceBrickData) controller.addBrick(true, BrickType.DISTANCE,new Location(0.0, 0.0),  "");
 
     double lat = 123.45, lon = 54.321;
     Location target          = new Location(lat, lon);

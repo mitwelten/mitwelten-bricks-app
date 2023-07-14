@@ -17,13 +17,15 @@ import ch.fhnw.mitwelten.bricksapp.util.mvcbase.ControllerBase;
 import java.io.File;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.Map;
+import java.util.Set;
 import java.util.function.BiConsumer;
 
 public class ApplicationController extends ControllerBase<Garden> {
 
   private final ProcessController brickController;
   private final MenuController    menuController;
-  private final IdController      idController;
+  private final MetaDataController metaDataController;
 
   public ApplicationController(Garden model) {
     super(model);
@@ -37,7 +39,7 @@ public class ApplicationController extends ControllerBase<Garden> {
 
     brickController = new ProcessController(model, createNotification);
     menuController  = new MenuController   (model, createNotification);
-    idController    = new IdController     (model, createNotification);
+    metaDataController = new MetaDataController(model, createNotification);
   }
 
   @Override
@@ -52,7 +54,7 @@ public class ApplicationController extends ControllerBase<Garden> {
     super.shutdown();
     brickController.shutdown();
     menuController .shutdown();
-    idController   .shutdown();
+    metaDataController.shutdown();
   }
 
   // ProcessController delegation
@@ -89,20 +91,28 @@ public class ApplicationController extends ControllerBase<Garden> {
     menuController.exportToFile(file);
   }
 
-  public BrickData addBrick(boolean isSimulated, BrickType userData, String id) {
-    return menuController.addBrick(isSimulated, userData, id, new Location(0.0, 0.0), 0);
+  public BrickData addBrick(boolean isSimulated, BrickType userData, Location location, String id) {
+    return menuController.addBrick(isSimulated, userData, id, location, 0);
   }
 
   public void removeBrick(BrickData data) {
-    if(idController.removeId(data)) menuController.removeBrick(data);
+    if(metaDataController.removeId(data)) menuController.removeBrick(data);
   }
 
   // IdController delegation
   public boolean isIdAssigned(String id) {
-    return idController.isValidId(id);
+    return metaDataController.isValidId(id);
   }
 
   public String getSimulatedId() {
-    return idController.getSimulatedId();
+    return metaDataController.getSimulatedId();
+  }
+
+  public Map<BrickType, Set<String>> initIds() {
+   return metaDataController.initIds();
+  }
+
+  public Map<String, Location> initPaxLocations() {
+    return metaDataController.initPaxLocations();
   }
 }

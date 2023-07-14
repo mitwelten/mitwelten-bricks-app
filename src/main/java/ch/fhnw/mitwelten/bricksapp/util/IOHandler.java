@@ -5,29 +5,23 @@
 
 package ch.fhnw.mitwelten.bricksapp.util;
 
-import ch.fhnw.mitwelten.bricksapp.model.brick.BrickData;
-
 import java.io.*;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-public class ConfigIOHandler {
+public class IOHandler {
 
-  public static boolean writeToFile(File file, List<? extends BrickData> bricks) {
+  public static boolean writeToFile(File file, List<String> bricks) {
     try (PrintWriter printWriter = new PrintWriter(file)) {
-      printWriter.write("sim,brick,id,lat,long,faceAngle\n");
-      bricks.stream()
-          .map(s -> {
-            boolean type = s.getID().contains("sim");
-            return String.valueOf(type).concat(",").concat(s.toString());
-          })
-          .map(s -> s.concat("\n"))
-          .peek(System.out::println)
-          .forEach(printWriter::write);
+      bricks.forEach(printWriter::write);
     } catch (FileNotFoundException e) {
-      System.err.println("Create CSV: File could not be created!");
+      System.err.println("Failed to wirte file" + file.getName());
       return false;
     }
     return true;
@@ -43,12 +37,22 @@ public class ConfigIOHandler {
         allLines.add(line);
       }
     } catch (IOException e) {
-      System.err.println("Could not read file!");
+      System.err.println("ConfigIOHandler: Could not read file! " + file.getName());
       return Optional.empty();
     } catch (NullPointerException e) {
       System.err.println("No file found!");
       return Optional.empty();
     }
     return Optional.of(allLines);
+  }
+
+  public static String jsonFromUrl(String url, String id) {
+    HttpClient client = HttpClient.newHttpClient();
+    HttpRequest request = HttpRequest.newBuilder()
+        .uri(URI.create(url + id))
+        .build();
+    return client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+        .thenApply(HttpResponse::body)
+        .join();
   }
 }
